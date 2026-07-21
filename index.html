@@ -1,0 +1,3244 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#C42B23">
+<title>GdG CSAIN — Giudice di Gara 3D</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16211B; --ink2:#3C4A42; --paper:#F4F3EC; --card:#FFFFFF;
+  --rosso:#C42B23; --rosso-scuro:#9A1F19; --giallo:#E2A711; --verde:#2F6B45; --verde-ch:#E4EFE7;
+  --linea:#DAD8CE; --ko:#C42B23; --ok:#2F6B45;
+  --r:14px; --shadow:0 1px 3px rgba(22,33,27,.10);
+  font-size:16px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Inter',-apple-system,'Segoe UI',sans-serif; background:var(--paper); color:var(--ink);
+  padding-bottom:calc(72px + env(safe-area-inset-bottom)); line-height:1.45;
+}
+h1,h2,h3,.disp{font-family:'Saira Condensed','Arial Narrow',sans-serif; letter-spacing:.02em; margin:0}
+
+/* ===== Header ===== */
+header{
+  background:var(--rosso); color:#fff; padding:calc(10px + env(safe-area-inset-top)) 16px 0;
+  position:sticky; top:0; z-index:30; box-shadow:0 2px 8px rgba(154,31,25,.35);
+}
+.hd-top{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+.hd-top h1{font-size:1.45rem; font-weight:800; text-transform:uppercase}
+.hd-top h1 small{font-weight:600; opacity:.85; font-size:.72em; letter-spacing:.08em}
+.hd-ctx{font-size:.78rem; opacity:.92; padding:2px 0 8px; min-height:1.3em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.hd-tricolore{height:4px; background:linear-gradient(90deg,#2F8F4E 0 33%,#F2F1EA 33% 66%,#C42B23 66%); margin:0 -16px}
+
+/* ===== Bottom nav ===== */
+nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:40; background:var(--ink); display:flex;
+  padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -2px 10px rgba(0,0,0,.25);
+}
+nav button{
+  flex:1; background:none; border:none; color:#9FB0A6; font-family:'Saira Condensed'; font-weight:700;
+  font-size:.82rem; text-transform:uppercase; letter-spacing:.05em; padding:9px 2px 10px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+}
+nav button svg{width:22px;height:22px; stroke:currentColor; fill:none; stroke-width:1.8}
+nav button.on{color:#fff}
+nav button.on::after{content:""; width:26px; height:3px; background:var(--rosso); border-radius:2px; margin-top:2px}
+
+/* ===== Layout ===== */
+main{max-width:760px; margin:0 auto; padding:14px 14px 30px}
+.view{display:none}
+.view.on{display:block; animation:fadein .18s ease}
+@keyframes fadein{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+.card{background:var(--card); border:1px solid var(--linea); border-radius:var(--r); box-shadow:var(--shadow); padding:14px; margin-bottom:12px}
+.card h2{font-size:1.25rem; text-transform:uppercase; margin-bottom:8px}
+.muted{color:var(--ink2); font-size:.85rem}
+.sp{height:8px}
+
+/* ===== Form ===== */
+label.f{display:block; font-size:.78rem; font-weight:600; color:var(--ink2); text-transform:uppercase; letter-spacing:.04em; margin:10px 0 3px}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{
+  width:100%; padding:11px 12px; border:1.5px solid var(--linea); border-radius:10px; font:inherit;
+  background:#fff; color:var(--ink);
+}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid rgba(196,43,35,.35); outline-offset:1px}
+textarea{min-height:84px; resize:vertical}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer;
+  font-family:'Saira Condensed'; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+  font-size:1rem; padding:11px 18px; border-radius:11px; background:var(--rosso); color:#fff;
+}
+.btn.sec{background:var(--ink); }
+.btn.ghost{background:#fff; color:var(--ink); border:1.5px solid var(--linea)}
+.btn.small{font-size:.85rem; padding:7px 12px; border-radius:9px}
+.btn:active{transform:translateY(1px)}
+
+/* ===== Picchetti chip (elemento firma) ===== */
+.pk{display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:.85rem}
+.pk i{width:11px; height:16px; clip-path:polygon(0 0,100% 0,100% 70%,50% 100%,0 70%); display:inline-block; border:1px solid rgba(0,0,0,.25)}
+.pk.b i{background:#fff}
+.pk.g i{background:var(--giallo)}
+.pk.r i{background:var(--rosso)}
+
+/* ===== Checklist ===== */
+.fase{margin-bottom:14px}
+.fase-hd{
+  display:flex; align-items:center; gap:10px; background:var(--ink); color:#fff; border-radius:var(--r) var(--r) 0 0;
+  padding:9px 14px; cursor:pointer; user-select:none;
+}
+.fase-hd h3{font-size:1.05rem; text-transform:uppercase; flex:1}
+.fase-hd .cnt{font-family:'Saira Condensed'; font-weight:700; font-size:.9rem; opacity:.9}
+.fase-hd .chev{transition:transform .18s}
+.fase.closed .chev{transform:rotate(-90deg)}
+.fase-body{background:var(--card); border:1px solid var(--linea); border-top:none; border-radius:0 0 var(--r) var(--r)}
+.fase.closed .fase-body{display:none}
+.ck{display:grid; grid-template-columns:34px 1fr 96px; gap:8px; align-items:start; padding:11px 12px; border-bottom:1px solid var(--linea)}
+.ck:last-child{border-bottom:none}
+.ck .num{font-family:'Saira Condensed'; font-weight:800; color:var(--ink2); font-size:1rem; padding-top:2px}
+.ck .txt{font-size:.92rem}
+.ck .txt .note-line{margin-top:6px}
+.ck .note-line input{padding:7px 9px; font-size:.85rem; border-radius:8px}
+.okko{display:flex; gap:5px}
+.okko button{
+  flex:1; min-height:40px; border-radius:9px; border:1.5px solid var(--linea); background:#fff; cursor:pointer;
+  font-family:'Saira Condensed'; font-weight:800; font-size:.95rem; color:var(--ink2);
+}
+.okko button.ok.on{background:var(--ok); border-color:var(--ok); color:#fff}
+.okko button.ko.on{background:var(--ko); border-color:var(--ko); color:#fff}
+.progress{height:8px; background:var(--linea); border-radius:5px; overflow:hidden; margin:6px 0 2px}
+.progress i{display:block; height:100%; background:var(--verde); border-radius:5px; transition:width .25s}
+.ko-flag{background:#FBEAE8; border:1px solid #EBC2BE; color:var(--rosso-scuro); border-radius:10px; padding:8px 12px; font-size:.85rem; margin-bottom:10px}
+
+/* ===== Regolamenti ===== */
+.gara-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px}
+.gara-tile{
+  background:var(--card); border:1.5px solid var(--linea); border-radius:var(--r); padding:12px; cursor:pointer; text-align:left;
+}
+.gara-tile:active{border-color:var(--rosso)}
+.gara-tile .gt-n{font-family:'Saira Condensed'; font-weight:800; font-size:1.5rem; line-height:1}
+.gara-tile .gt-s{font-size:.75rem; color:var(--ink2); margin-top:3px}
+.badge{display:inline-block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:2px 7px; border-radius:20px; background:var(--verde-ch); color:var(--verde); margin-top:7px}
+.badge.ind{background:#FDF3DA; color:#8A6205}
+table.pts{width:100%; border-collapse:collapse; font-size:.88rem; margin:6px 0}
+table.pts th,table.pts td{border:1px solid var(--linea); padding:6px 8px; text-align:center}
+table.pts th{background:var(--paper); font-family:'Saira Condensed'; text-transform:uppercase; font-size:.8rem}
+table.pts td:first-child{text-align:left; font-weight:600}
+.dist-row{display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px dashed var(--linea); font-size:.9rem; gap:8px; flex-wrap:wrap}
+.dist-row:last-child{border-bottom:none}
+.dist-row b{font-family:'Saira Condensed'; font-size:1rem}
+.maxpt{font-family:'Saira Condensed'; font-weight:800; font-size:1.3rem; color:var(--rosso)}
+.back{margin-bottom:10px}
+ul.tight{margin:6px 0; padding-left:18px; font-size:.9rem}
+ul.tight li{margin-bottom:5px}
+
+/* ===== Strumenti ===== */
+.res{
+  margin-top:10px; border-radius:11px; padding:12px 14px; font-size:.95rem; display:none;
+}
+.res.show{display:block}
+.res.good{background:var(--verde-ch); border:1.5px solid var(--verde); }
+.res.bad{background:#FBEAE8; border:1.5px solid var(--rosso)}
+.res.neutral{background:var(--paper); border:1.5px solid var(--linea)}
+.res .big{font-family:'Saira Condensed'; font-weight:800; font-size:1.5rem; display:block}
+.seg{display:flex; border:1.5px solid var(--linea); border-radius:11px; overflow:hidden; margin-top:4px}
+.seg button{flex:1; border:none; background:#fff; padding:10px 4px; font:inherit; font-size:.85rem; font-weight:600; cursor:pointer; color:var(--ink2)}
+.seg button.on{background:var(--ink); color:#fff}
+.timer-disp{font-family:'Saira Condensed'; font-weight:800; font-size:4rem; text-align:center; letter-spacing:.03em; padding:6px 0; font-variant-numeric:tabular-nums}
+.timer-disp.warn{color:var(--giallo)}
+.timer-disp.end{color:var(--rosso)}
+.preset-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:10px}
+
+/* ===== Relazione ===== */
+pre.rel{
+  background:var(--paper); border:1px solid var(--linea); border-radius:10px; padding:12px;
+  white-space:pre-wrap; font-family:'Inter'; font-size:.85rem; max-height:340px; overflow:auto;
+}
+.toolbar{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+
+
+/* ===== Piazzole ===== */
+.pz-item{background:var(--card); border:1px solid var(--linea); border-radius:var(--r); margin-bottom:10px; overflow:hidden}
+.pz-hd{display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; user-select:none}
+.pz-hd .pz-n{font-family:'Saira Condensed'; font-weight:800; font-size:1.35rem; min-width:34px; text-align:center; background:var(--ink); color:#fff; border-radius:8px; padding:2px 0}
+.pz-hd .pz-info{flex:1; min-width:0}
+.pz-hd .pz-info .l1{font-weight:600; font-size:.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pz-hd .pz-info .l2{font-size:.76rem; color:var(--ink2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pz-st{width:14px; height:14px; border-radius:50%; flex-shrink:0; border:2px solid var(--linea); background:#fff}
+.pz-st.ok{background:var(--ok); border-color:var(--ok)}
+.pz-st.tol{background:var(--giallo); border-color:var(--giallo)}
+.pz-st.ko{background:var(--ko); border-color:var(--ko)}
+.pz-body{display:none; border-top:1px solid var(--linea); padding:12px}
+.pz-item.open .pz-body{display:block}
+.pz-item.open .pz-hd{background:var(--paper)}
+.row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}
+.chkline{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px}
+.chk{display:inline-flex; align-items:center; gap:7px; font-size:.88rem; font-weight:600; cursor:pointer}
+.chk input{width:20px; height:20px; accent-color:var(--rosso)}
+.pz-alerts{margin-top:10px; display:flex; flex-direction:column; gap:6px}
+.pz-al{font-size:.84rem; border-radius:9px; padding:7px 10px}
+.pz-al.ko{background:#FBEAE8; border:1px solid #EBC2BE; color:var(--rosso-scuro)}
+.pz-al.tol{background:#FDF3DA; border:1px solid #EBD9A2; color:#7A5A08}
+.pz-al.ok{background:var(--verde-ch); border:1px solid #BFD8C7; color:var(--verde)}
+.sum-row{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--linea); font-size:.9rem; gap:8px}
+.sum-row:last-child{border-bottom:none}
+.sum-row .val{font-family:'Saira Condensed'; font-weight:800; font-size:1rem}
+.sum-row .val.bad{color:var(--ko)} .sum-row .val.good{color:var(--ok)}
+
+
+/* ===== Arcieri / controllo piazzole in gara ===== */
+#logSeg{overflow-x:auto; scrollbar-width:none}
+#logSeg::-webkit-scrollbar{display:none}
+#logSeg button{flex:1 0 auto; padding:11px 12px; white-space:nowrap}
+.ar-row{display:flex; gap:9px; align-items:center; padding:7px 0; border-bottom:1px dashed var(--linea)}
+.ar-row:last-child{border-bottom:none}
+.ar-let{font-family:'Saira Condensed'; font-weight:800; font-size:.95rem; background:var(--paper); border:1px solid var(--linea); border-radius:7px; min-width:30px; text-align:center; padding:2px 3px; flex-shrink:0}
+.ar-info{flex:1; min-width:0}
+.ar-info .l1{font-weight:600; font-size:.92rem}
+.ar-info .l2{font-size:.76rem; color:var(--ink2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ar-cat{font-family:'Saira Condensed'; font-weight:800; font-size:.92rem; color:var(--ink2); flex-shrink:0}
+.ar-okko{flex-shrink:0; width:88px}
+.ar-okko button{min-height:36px}
+.ar-det{background:#FBEAE8; border:1px solid #EBC2BE; border-radius:10px; padding:9px 10px; margin:2px 0 8px}
+.ar-det input[type=text]{padding:8px 10px; font-size:.88rem; background:#fff}
+input[type=number].vel-fps{width:74px; flex:0 0 74px; padding:9px 4px; font-size:.95rem; text-align:center}
+.vel-esito{font-family:'Saira Condensed'; font-weight:800; font-size:.95rem; min-width:64px; text-align:right; flex-shrink:0}
+.vel-esito.good{color:var(--ok)} .vel-esito.bad{color:var(--ko)} .vel-esito.mut{color:var(--ink2); opacity:.6}
+
+
+/* ===== Archivio / Utenti ===== */
+
+.user-item,.arch-item{display:flex; align-items:center; gap:10px; padding:10px 2px; border-bottom:1px dashed var(--linea)}
+.user-item:last-child,.arch-item:last-child{border-bottom:none}
+.user-pick{width:22px; height:22px; border-radius:50%; border:2px solid var(--linea); background:#fff; flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center}
+.user-pick.on{border-color:var(--rosso); background:var(--rosso)}
+.user-pick.on::after{content:""; width:8px; height:8px; border-radius:50%; background:#fff}
+.ui-info{flex:1; min-width:0; cursor:pointer}
+.ui-info .l1{font-weight:600; font-size:.94rem}
+.ui-info .l2{font-size:.78rem; color:var(--ink2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.icon-btn{border:1.5px solid var(--linea); background:#fff; border-radius:9px; width:38px; height:38px; cursor:pointer; font-size:1rem; flex-shrink:0}
+.icon-btn:active{border-color:var(--rosso)}
+.arch-badge{font-family:'Saira Condensed'; font-weight:800; font-size:.95rem; background:var(--ink); color:#fff; border-radius:8px; padding:3px 8px; flex-shrink:0}
+.empty-hint{color:var(--ink2); font-size:.86rem; padding:8px 0}
+
+
+/* ===== Registro / foto / casistica ===== */
+.log-item{display:flex; gap:10px; align-items:flex-start; padding:9px 2px; border-bottom:1px dashed var(--linea); font-size:.9rem}
+.log-item:last-child{border-bottom:none}
+.log-ts{font-family:'Saira Condensed'; font-weight:800; color:var(--ink2); min-width:44px}
+.log-txt{flex:1; min-width:0}
+.log-txt .sanz-tipo{font-weight:700; text-transform:uppercase; font-size:.78rem}
+.sanz-tipo.Ammonizione{color:#8A6205}.sanz-tipo.Diffida{color:#B4530A}.sanz-tipo.Squalifica{color:var(--rosso)}
+.ph-row{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; align-items:center}
+.ph-thumb{position:relative; width:56px; height:56px; border-radius:9px; overflow:hidden; border:1.5px solid var(--linea)}
+.ph-thumb img{width:100%; height:100%; object-fit:cover; display:block}
+.ph-thumb .ph-x{position:absolute; top:0; right:0; background:rgba(22,33,27,.75); color:#fff; border:none; width:20px; height:20px; font-size:.75rem; cursor:pointer; border-radius:0 0 0 8px}
+.cas-item{border-bottom:1px dashed var(--linea)}
+.cas-item:last-child{border-bottom:none}
+.cas-q{display:flex; gap:8px; align-items:center; padding:10px 2px; cursor:pointer; font-weight:600; font-size:.92rem}
+.cas-q::before{content:"?"; font-family:'Saira Condensed'; font-weight:800; color:#fff; background:var(--rosso); border-radius:7px; min-width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0}
+.cas-a{display:none; padding:0 2px 12px 32px; font-size:.88rem}
+.cas-item.open .cas-a{display:block}
+.cas-a .ref{display:block; margin-top:5px; font-size:.76rem; color:var(--ink2); font-weight:600}
+
+
+/* ===== Riorganizzazione UI ===== */
+.subnav{margin-bottom:12px; background:#fff; box-shadow:var(--shadow)}
+.subnav button{padding:11px 4px; font-family:'Saira Condensed'; font-weight:700; text-transform:uppercase; letter-spacing:.04em; font-size:.88rem}
+.acc-hd{display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none}
+.acc-hd h2{margin:0}
+.acc-sum{flex:1; text-align:right; font-size:.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
+.chev2{flex-shrink:0; transition:transform .18s; color:var(--ink2)}
+.card.closed .chev2{transform:rotate(-90deg)}
+.card.closed #gFields, .card.closed .acc-body{display:none}
+.card.acc{padding:0}
+.card.acc .acc-hd{padding:13px 14px}
+.card.acc .acc-body{padding:0 14px 14px}
+.card.acc h2{font-size:1.1rem}
+
+
+/* ===== Verifiche per piazzola ===== */
+.fase-hint{font-size:.8rem; color:var(--ink2); background:var(--paper); border-bottom:1px solid var(--linea); padding:8px 12px}
+.pz-chkcnt{font-family:'Saira Condensed'; font-weight:800; font-size:.8rem; color:var(--ink2); background:var(--paper); border:1px solid var(--linea); border-radius:7px; padding:2px 6px; flex-shrink:0}
+.pz-chkcnt.full{color:var(--verde); border-color:var(--verde)}
+.pzchk{margin-top:12px; border:1px solid var(--linea); border-radius:11px; overflow:hidden}
+.pzchk-hd{display:flex; align-items:center; gap:8px; padding:9px 11px; background:var(--paper); cursor:pointer; user-select:none; font-weight:700; font-size:.86rem}
+.pzchk-hd .chev2{margin-left:auto}
+.pzchk.closed .pzchk-body{display:none}
+.pzchk.closed .chev2{transform:rotate(-90deg)}
+.pzchk-row{display:grid; grid-template-columns:36px 1fr 88px; gap:8px; align-items:center; padding:8px 11px; border-top:1px solid var(--linea)}
+.pzchk-row .num{font-family:'Saira Condensed'; font-weight:800; color:var(--ink2); font-size:.92rem}
+.pzchk-row .txt{font-size:.84rem}
+.pzchk-row .okko button{min-height:34px; font-size:.85rem}
+.pzchk-foot{padding:8px 11px; border-top:1px solid var(--linea)}
+
+
+/* ===== Briefing ===== */
+.bri-item{display:flex; gap:10px; align-items:flex-start; padding:10px 2px; border-bottom:1px dashed var(--linea)}
+.bri-item:last-child{border-bottom:none}
+.bri-tick{width:26px; height:26px; border-radius:8px; border:2px solid var(--linea); background:#fff; flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:.9rem; color:#fff; margin-top:1px}
+.bri-item.done .bri-tick{background:var(--verde); border-color:var(--verde)}
+.bri-item.done .bri-tick::after{content:"✓"}
+.bri-txt{flex:1; min-width:0; font-size:.92rem; cursor:pointer; user-select:none}
+.bri-item.done .bri-txt{color:var(--ink2); text-decoration:line-through; text-decoration-color:rgba(60,74,66,.5)}
+.bri-src{display:inline-block; font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:1px 6px; border-radius:20px; background:var(--paper); border:1px solid var(--linea); color:var(--ink2); margin-left:6px; vertical-align:middle}
+
+
+/* ===== Sagome aggiuntive ===== */
+.sag-row{display:grid; grid-template-columns:52px 76px 1fr 1fr; gap:8px; align-items:center; margin-top:8px}
+.sag-row .sag-lbl{font-family:'Saira Condensed'; font-weight:800; font-size:.85rem; color:var(--ink2); text-transform:uppercase}
+.sag-row select,.sag-row input{padding:9px 8px; font-size:.9rem}
+
+
+/* ===== Guida ===== */
+#btnHelp{width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,.7); background:transparent; color:#fff; font-family:'Saira Condensed'; font-weight:800; font-size:1.1rem; cursor:pointer; flex-shrink:0; align-self:center}
+#helpOv{position:fixed; inset:0; z-index:60; background:var(--paper); display:flex; flex-direction:column}
+#helpOv[hidden]{display:none}
+.help-hd{display:flex; align-items:center; gap:10px; padding:calc(12px + env(safe-area-inset-top)) 16px 10px; background:var(--ink); color:#fff}
+.help-hd h2{flex:1; font-size:1.3rem; text-transform:uppercase}
+.help-ver{font-size:.72rem; font-weight:600; opacity:.75; letter-spacing:.05em; margin-left:8px}
+.help-hd .icon-btn{background:transparent; border-color:rgba(255,255,255,.4); color:#fff}
+.help-body{flex:1; overflow-y:auto; padding:14px 14px calc(20px + env(safe-area-inset-bottom)); max-width:760px; width:100%; margin:0 auto}
+.hg-sec{background:var(--card); border:1px solid var(--linea); border-radius:var(--r); box-shadow:var(--shadow); margin-bottom:10px; overflow:hidden}
+.hg-hd{display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; user-select:none}
+.hg-hd h3{flex:1; font-size:1.05rem; text-transform:uppercase}
+.hg-sec.closed .hg-items{display:none}
+.hg-sec.closed .chev2{transform:rotate(-90deg)}
+.hg-items{border-top:1px solid var(--linea); padding:4px 14px 12px}
+.hg-it{padding:9px 0; border-bottom:1px dashed var(--linea); font-size:.89rem}
+.hg-it:last-child{border-bottom:none}
+.hg-it b.t{display:block; margin-bottom:2px}
+.hg-it .muted{font-size:.89rem}
+
+@media(min-width:700px){ .ck .txt{font-size:.95rem} }
+@media(prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important} }
+</style>
+</head>
+<body>
+<header>
+  <div class="hd-top">
+    <h1>Giudice di Gara <small>CSAIN · Tiro con l'arco 3D</small></h1>
+    <button id="btnHelp" aria-label="Guida d'uso">?</button>
+  </div>
+  <div class="hd-ctx" id="hdCtx">Nessuna gara attiva — imposta i dati in Checklist</div>
+  <div class="hd-tricolore"></div>
+</header>
+
+<main>
+  <!-- ============ CHECKLIST ============ -->
+  <section class="view" id="v-check">
+    <div class="card" id="garaCard">
+      <div class="acc-hd" id="garaHd"><h2>Dati gara</h2><span class="acc-sum muted" id="garaSum"></span><svg class="chev2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div id="gFields">
+      <div class="row2">
+        <div><label class="f">Tipo di gara</label>
+          <select id="gTipo"></select></div>
+        <div><label class="f">Data</label><input type="date" id="gData"></div>
+      </div>
+      <div class="row2">
+        <div><label class="f">Località</label><input type="text" id="gLoc" placeholder="Comune / campo"></div>
+        <div><label class="f">Giudice di gara</label><input type="text" id="gGdg" placeholder="Nome e cognome"></div>
+      </div>
+      <div class="row2">
+        <div><label class="f">ASD organizzatrice</label><input type="text" id="gAsd"></div>
+        <div><label class="f">Responsabile organizzazione</label><input type="text" id="gResp"></div>
+      </div>
+      <div class="row2">
+        <div><label class="f">Tel. responsabile</label><input type="text" id="gTel" inputmode="tel"></div>
+        <div><label class="f">Ambulanza prevista</label>
+          <select id="gAmb"><option value="">—</option><option>SI</option><option>NO</option></select></div>
+      </div>
+      <div class="toolbar">
+        <button class="btn ghost small" id="btnReset">Nuova gara (azzera checklist)</button>
+      </div>
+      </div>
+    </div>
+    <div class="card" style="padding:10px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <h2 style="margin:0">Avanzamento</h2><span class="disp" id="pTot" style="font-weight:800;font-size:1.2rem">0/0</span>
+      </div>
+      <div class="progress"><i id="pBar" style="width:0%"></i></div>
+      <div id="koSummary"></div>
+    </div>
+    <div id="ckList"></div>
+  </section>
+
+  <!-- ============ PIAZZOLE ============ -->
+  <section class="view" id="v-pz">
+    <div class="card" id="pzTop"></div>
+    <div class="card" id="pzChooser" style="display:none"></div>
+    <div class="card" id="pzSummary" style="display:none"></div>
+    <div id="pzList"></div>
+    <input type="file" id="pzFile" accept=".xlsx,.xls" style="display:none">
+  </section>
+
+  <!-- ============ REGISTRO ============ -->
+  <section class="view" id="v-log">
+    <div class="seg subnav" id="logSeg">
+      <button data-p="dia" class="on">Diario</button>
+      <button data-p="arc">Arcieri</button>
+      <button data-p="bri">Briefing</button>
+      <button data-p="san">Sanzioni</button>
+      <button data-p="ctr">Controlli</button>
+      <button data-p="eme">Emergenze</button>
+    </div>
+    <div class="card" data-lsec="dia">
+      <h2>Diario di gara</h2>
+      <p class="muted">Ogni annotazione salva l'orario esatto e finisce nella cronologia della relazione.</p>
+      <div class="toolbar" style="margin-top:0">
+        <button class="btn ghost small" data-q="Inizio gara">Inizio gara</button>
+        <button class="btn ghost small" data-q="Sospensione gara (1 segnale acustico)">Sospensione</button>
+        <button class="btn ghost small" data-q="Ripresa gara (1 segnale acustico)">Ripresa</button>
+        <button class="btn ghost small" data-q="Fine gara">Fine gara</button>
+      </div>
+      <label class="f">Annotazione</label>
+      <div style="display:flex; gap:8px">
+        <input type="text" id="dTxt" placeholder="es. pioggia forte, verifica pz 12…" style="flex:1">
+        <button class="btn" id="dAdd">Annota</button>
+      </div>
+      <div id="dList"></div>
+    </div>
+
+    <div class="card" data-lsec="arc">
+      <h2>Piazzole e arcieri</h2>
+      <p class="muted">Carica il PDF delle piazzole fornito dall'organizzazione: per ogni piazzola vedi gli arcieri nell'ordine del file. Al controllo della piazzola segni OK/KO su ogni arciere; per i KO indichi il tipo di irregolarità e la nota per l'organizzazione.</p>
+      <div class="toolbar" style="margin-top:0">
+        <button class="btn small" id="iscrImp">Carica PDF piazzole</button>
+        <button class="btn ghost small" id="iscrClr" style="display:none">Svuota</button>
+      </div>
+      <div id="iscrTop"></div>
+    </div>
+    <div class="card" data-lsec="arc" id="iscrSumCard" style="display:none"></div>
+    <div data-lsec="arc" id="iscrList"></div>
+    <input type="file" id="iscrFile" accept="application/pdf,.pdf" style="display:none">
+
+    <div class="card" data-lsec="bri">
+      <h2>Briefing pre-gara</h2>
+      <p class="muted">Prepara la scaletta la sera della ricognizione; la mattina tocca ogni punto mentre lo dici per spuntarlo.</p>
+      <div class="toolbar" style="margin-top:0">
+        <button class="btn small" id="brStd">Scaletta standard</button>
+        <button class="btn sec small" id="brPz">Appunti dal percorso</button>
+        <button class="btn ghost small" id="brClr">Svuota</button>
+      </div>
+      <label class="f">Aggiungi punto</label>
+      <div style="display:flex; gap:8px">
+        <input type="text" id="brTxt" placeholder="es. pz 14 in salita, occhio al fango…" style="flex:1">
+        <button class="btn" id="brAdd">＋</button>
+      </div>
+      <div class="progress" style="margin-top:12px"><i id="brBar" style="width:0%"></i></div>
+      <div class="muted" id="brCnt" style="text-align:right"></div>
+      <div id="brList"></div>
+    </div>
+    <div class="card" data-lsec="san">
+      <h2>Sanzioni</h2>
+      <div class="res show neutral" style="margin-top:0;font-size:.84rem">
+        <b>Ammonizione</b>: richiamo verbale; se non ripristina → annullo punteggio piazzola. ·
+        <b>Diffida</b>: annullo immediato piazzola; se persiste → squalifica. ·
+        <b>Squalifica</b>: allontanamento immediato dal campo.
+      </div>
+      <div class="row2">
+        <div><label class="f">Arciere</label><input type="text" id="sArc"></div>
+        <div><label class="f">Piazzola/corsia</label><input type="text" id="sPz" inputmode="numeric"></div>
+      </div>
+      <div class="row2">
+        <div><label class="f">Provvedimento</label><select id="sTipo"><option>Ammonizione</option><option>Diffida</option><option>Squalifica</option></select></div>
+        <div><label class="f">Motivo / articolo</label><input type="text" id="sMot" placeholder="es. tiro fuori direzione, Cap IV Par V"></div>
+      </div>
+      <div class="toolbar"><button class="btn" id="sAdd">Registra sanzione</button></div>
+      <div id="sList"></div>
+    </div>
+
+    <div class="card" data-lsec="san">
+      <h2>Ricorsi</h2>
+      <p class="muted">Ricorsi in forma scritta, entro <b>30 minuti</b> dalla pubblicazione della classifica e comunque prima delle premiazioni. Decisione del GdG inappellabile.</p>
+      <div class="toolbar" style="margin-top:0">
+        <button class="btn" id="clPub">Classifica pubblicata ora</button>
+        <button class="btn ghost small" id="clDel" style="display:none">Annulla</button>
+      </div>
+      <div class="res" id="clRes"></div>
+    </div>
+
+    <div class="card" data-lsec="ctr">
+      <h2>Controllo velocità compound</h2>
+      <p class="muted">Limite <b>300 fps</b> (cronotachigrafo a 1,5–2 m): oltre il limite scatta la <b>squalifica immediata</b>. Carica l'elenco iscritti dell'organizzazione: estraggo gli arcieri delle categorie compound (CO · SL · SI · FS) in ordine alfabetico.</p>
+      <div class="toolbar" style="margin-top:0">
+        <button class="btn small" id="velImp">Carica PDF iscritti</button>
+        <button class="btn ghost small" id="velClr" style="display:none">Svuota</button>
+      </div>
+      <div id="velTop"></div>
+      <div id="velList"></div>
+      <label class="f">Aggiungi arciere fuori elenco</label>
+      <div style="display:flex; gap:8px">
+        <input type="text" id="velNome" placeholder="Nome e cognome" style="flex:1">
+        <button class="btn" id="velAdd">＋</button>
+      </div>
+    </div>
+    <input type="file" id="velFile" accept="application/pdf,.pdf" style="display:none">
+
+    <div class="card" data-lsec="eme">
+      <h2>Emergenze</h2>
+      <div class="toolbar" style="margin-top:0">
+        <a class="btn" href="tel:112" style="text-decoration:none">☎ 112</a>
+        <a class="btn sec" id="emResp" href="#" style="text-decoration:none">☎ Responsabile</a>
+        <a class="btn sec" id="emSocc" href="#" style="text-decoration:none">☎ Soccorso</a>
+      </div>
+      <label class="f">Telefono soccorso/ambulanza sul campo</label>
+      <input type="text" id="emTel" inputmode="tel" placeholder="numero diretto ambulanza">
+      <label class="f">Posizione GPS da dettare ai soccorsi</label>
+      <div class="toolbar" style="margin-top:4px">
+        <button class="btn" id="gpsGet">Rileva posizione</button>
+        <button class="btn ghost small" id="gpsCopy" style="display:none">Copia coordinate</button>
+      </div>
+      <div class="res" id="gpsRes"></div>
+    </div>
+  </section>
+
+  <!-- ============ CONSULTA (wrapper) ============ -->
+  <section class="view" id="v-cons">
+    <div class="seg subnav" id="consSeg">
+      <button data-p="reg" class="on">Schede gara</button>
+      <button data-p="cas">Casistica</button>
+      <button data-p="tools">Strumenti</button>
+    </div>
+    <div id="consPanes"></div>
+  </section>
+
+  <!-- ============ REFERTO (wrapper) ============ -->
+  <section class="view" id="v-fine">
+    <div class="seg subnav" id="fineSeg">
+      <button data-p="rel" class="on">Relazione</button>
+      <button data-p="arch">Archivio</button>
+    </div>
+    <div id="finePanes"></div>
+  </section>
+
+  <!-- ============ REGOLAMENTI ============ -->
+  <section class="view" id="v-reg">
+    <div id="regIndex">
+      <div class="card"><h2>Schede gara</h2>
+        <p class="muted">Distanze massime, punteggi e prescrizioni chiave per ogni formato. Fonte: Regolamento Gare Outdoor 2026 rev. 5.0 e Indoor 2026 rev. 2.0.</p>
+      </div>
+      <div class="gara-grid" id="regGrid"></div>
+      <div class="sp"></div>
+      <div class="card">
+        <h2>Riferimenti rapidi</h2>
+        <div class="dist-row"><span>Classe <b>Prime Frecce</b> (7–10 anni)</span><span><b>max 20 lb</b> · solo ricurvo/longbow</span></div>
+        <div class="dist-row"><span>Classe <b>Lupetti</b> (10–13)</span><span><b>max 25 lb</b></span></div>
+        <div class="dist-row"><span>Classe <b>Scout</b> (13–18)</span><span><b>max 40 lb</b></span></div>
+        <div class="dist-row"><span>Velocità massima frecce</span><span><b>300 fps</b> · cronotachigrafo a 1,5–2 m</span></div>
+        <div class="dist-row"><span>Diametro max asta e punta</span><span><b>9,4 mm</b></span></div>
+        <div class="dist-row"><span>Tolleranza distanze picchetto–bersaglio</span><span><b>5%</b> solo per terreno/sicurezza</span></div>
+        <div class="dist-row"><span>Picchetti</span><span><span class="pk b"><i></i>Tecnologici</span> &nbsp;<span class="pk g"><i></i>Tradizionali</span> &nbsp;<span class="pk r"><i></i>PF/Lupetti</span></span></div>
+        <div class="dist-row"><span>Gruppi sagome (L o H)</span><span>G1 &gt;25 · G2 20–25 · G3 15–20 · G4 &lt;15 cm</span></div>
+      </div>
+      <div class="card" id="casCard">
+        <h2>Cosa faccio se… (casistica)</h2>
+        <input type="text" id="casQ" placeholder="Cerca: freccia caduta, arco rotto, binocolo…">
+        <div id="casList" style="margin-top:8px"></div>
+      </div>
+    </div>
+    <div id="regDetail" style="display:none"></div>
+  </section>
+
+  <!-- ============ STRUMENTI ============ -->
+  <section class="view" id="v-tools">
+    <div class="card">
+      <h2>Gruppo sagoma</h2>
+      <p class="muted">Misura L o H dello spot in cm (metodo Linee Guida pag. 5).</p>
+      <label class="f">Misura L o H (cm)</label>
+      <input type="number" id="tGrCm" inputmode="decimal" step="0.5" placeholder="es. 22">
+      <div class="res" id="tGrRes"></div>
+    </div>
+
+    <div class="card">
+      <h2>Verifica distanza piazzola</h2>
+      <div class="row2">
+        <div><label class="f">Gara</label><select id="tDGara"></select></div>
+        <div><label class="f">Gruppo</label><select id="tDGr"><option value="0">Gruppo 1</option><option value="1">Gruppo 2</option><option value="2">Gruppo 3</option><option value="3">Gruppo 4</option><option value="mob2">Mobile G2</option><option value="mob3">Mobile G3</option></select></div>
+      </div>
+      <div class="row2">
+        <div><label class="f">Picchetto</label><select id="tDCat">
+          <option value="tech">Bianco — tecnologici</option>
+          <option value="trad">Giallo — tradizionali</option>
+          <option value="pf">Rosso — PF/Lupetti</option></select></div>
+        <div><label class="f">Distanza misurata (m)</label><input type="number" id="tDVal" inputmode="decimal" step="0.1"></div>
+      </div>
+      <div class="res" id="tDRes"></div>
+    </div>
+
+    <div class="card">
+      <h2>Validità gara — piazzole annullate</h2>
+      <p class="muted">Reg. Sportivo Cap. IV Par. XI. Vale sia per gare 20 piazzole che 10+10.</p>
+      <label class="f">Non imputabili all'organizzazione (naturali, terzi) — max 5</label>
+      <input type="number" id="tVNat" inputmode="numeric" min="0" value="0">
+      <label class="f">Imputabili — inefficienza materiali — max 3</label>
+      <input type="number" id="tVIneff" inputmode="numeric" min="0" value="0">
+      <label class="f">Imputabili — motivi di sicurezza — max 2</label>
+      <input type="number" id="tVSic" inputmode="numeric" min="0" value="0">
+      <div class="res" id="tVRes"></div>
+    </div>
+
+    <div class="card">
+      <h2>Spareggio classifica</h2>
+      <p class="muted">A parità di punti: più Spot → più Super Spot → più Perfect (dove previsto) → ex aequo.</p>
+      <table class="pts"><tr><th></th><th>Arciere A</th><th>Arciere B</th></tr>
+        <tr><td>Punti</td><td><input type="number" id="pxA0" inputmode="numeric"></td><td><input type="number" id="pxB0" inputmode="numeric"></td></tr>
+        <tr><td>Spot</td><td><input type="number" id="pxA1" inputmode="numeric"></td><td><input type="number" id="pxB1" inputmode="numeric"></td></tr>
+        <tr><td>Super Spot</td><td><input type="number" id="pxA2" inputmode="numeric"></td><td><input type="number" id="pxB2" inputmode="numeric"></td></tr>
+        <tr><td>Perfect</td><td><input type="number" id="pxA3" inputmode="numeric"></td><td><input type="number" id="pxB3" inputmode="numeric"></td></tr>
+      </table>
+      <div class="res" id="pxRes"></div>
+    </div>
+
+    <div class="card">
+      <h2>Regole score (validità)</h2>
+      <ul class="tight">
+        <li><b>Due score cartacei</b> con discrepanza → vale il punteggio <b>più basso</b>.</li>
+        <li><b>Cartaceo + elettronico</b> → vale l'elettronico <b>solo se</b> la somma totale è verificabile e riportata anche sul cartaceo; in caso di differenza vale comunque il punteggio <b>inferiore</b>.</li>
+        <li>Cartaceo senza n. di Spot/Superspot/Perfect → quei valori <b>non entrano</b> in classifica.</li>
+        <li>Score non consegnato, senza firma o senza somma totale al momento della consegna → inserimento in classifica con punteggio <b>zero</b>.</li>
+        <li>Contestazioni sul proprio punteggio: <b>nessun reclamo dopo la firma</b>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Timer tiro</h2>
+      <p class="muted">Backup con segnale acustico (ammesso in caso di guasto semaforo/monitor).</p>
+      <div class="preset-grid">
+        <button class="btn ghost small" data-t="60">1 freccia · 60″</button>
+        <button class="btn ghost small" data-t="90">2 frecce · 90″</button>
+        <button class="btn ghost small" data-t="120">2 min</button>
+        <button class="btn ghost small" data-t="180">3 frecce · 3′</button>
+        <button class="btn ghost small" data-t="25">Tempo lim. 25″</button>
+        <button class="btn ghost small" data-t="30">Tempo lim. 30″</button>
+      </div>
+      <div class="timer-disp" id="tmDisp">—</div>
+      <div class="toolbar" style="justify-content:center">
+        <button class="btn" id="tmStart">Avvia</button>
+        <button class="btn sec" id="tmStop">Stop</button>
+      </div>
+      <p class="muted" style="text-align:center;margin-bottom:0">Avviso a 15″ dalla fine · segnale acustico allo scadere</p>
+    </div>
+  </section>
+
+  <!-- ============ RELAZIONE ============ -->
+  <section class="view" id="v-rel">
+    <div class="card">
+      <h2>Relazione di gara</h2>
+      <p class="muted">I dati gara e i punti KO della checklist vengono ripresi automaticamente. Compila il resto e invia a <b>gdgcsain@gmail.com</b>.</p>
+      <label class="f">N. partecipanti</label><input type="number" id="rPart" inputmode="numeric">
+      <label class="f">Orario inizio / fine gara</label>
+      <div class="row2"><input type="time" id="rIni"><input type="time" id="rFine"></div>
+      <label class="f">Controllo materiali effettuato</label>
+      <select id="rMat"><option value="">—</option><option>Prima della partenza</option><option>Durante la gara, a campione</option><option>Non effettuato</option></select>
+      <label class="f">Piazzole annullate (n. e motivo)</label><input type="text" id="rAnn" placeholder="es. nessuna / 2 per maltempo">
+      <label class="f">Sanzioni comminate</label><input type="text" id="rSanz" placeholder="es. nessuna / 1 ammonizione art...">
+      <label class="f">Criticità e fatti rilevanti</label><textarea id="rCrit" placeholder="Descrivi eventuali criticità della giornata"></textarea>
+      <label class="f">Andamento premiazioni</label><input type="text" id="rPrem" placeholder="es. regolari, podio identificato, chiamata dal 3° classificato">
+      <label class="f">Note finali</label><textarea id="rNote"></textarea>
+      <div class="toolbar">
+        <button class="btn" id="rGen">Genera relazione</button>
+      </div>
+    </div>
+    <div class="card" id="rOutCard" style="display:none">
+      <h2>Anteprima</h2>
+      <pre class="rel" id="rOut"></pre>
+      <div class="toolbar">
+        <button class="btn sec" id="rCopy">Copia testo</button>
+        <button class="btn" id="rMail">Invia via e-mail</button>
+        <button class="btn ghost" id="rShare">Condividi</button>
+        <button class="btn ghost" id="rArch">Archivia gara</button>
+      </div>
+    </div>
+  <!-- ============ ARCHIVIO ============ -->
+  <section class="view" id="v-arch">
+    <div class="card">
+      <h2>Giudici di gara</h2>
+      <p class="muted">Il giudice attivo viene inserito automaticamente nei dati gara e nella relazione.</p>
+      <div id="userList"></div>
+      <div class="sp"></div>
+      <div class="row2">
+        <div><label class="f">Nome e cognome</label><input type="text" id="uNome"></div>
+        <div><label class="f">N. tessera RCT</label><input type="text" id="uTess"></div>
+      </div>
+      <div class="row2">
+        <div><label class="f">Telefono</label><input type="text" id="uTel" inputmode="tel"></div>
+        <div><label class="f">E-mail</label><input type="text" id="uMail" inputmode="email"></div>
+      </div>
+      <div class="toolbar">
+        <button class="btn" id="uSave">Salva giudice</button>
+        <button class="btn ghost small" id="uCancel" style="display:none">Annulla modifica</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Gare archiviate</h2>
+      <p class="muted">Salva la gara in corso per conservarla e ripartire pulito; puoi riaprirla in qualsiasi momento.</p>
+      <div class="toolbar" style="margin-top:0;margin-bottom:10px">
+        <button class="btn" id="aSaveCur">Archivia la gara in corso</button>
+      </div>
+      <div id="archList"></div>
+      <div class="toolbar">
+        <button class="btn ghost small" id="aExpAll">Esporta tutto (JSON)</button>
+        <button class="btn ghost small" id="aImp">Importa JSON</button>
+        <input type="file" id="aImpFile" accept="application/json" style="display:none">
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="helpOv" hidden>
+  <div class="help-hd">
+    <h2>Guida d'uso <span class="help-ver" id="helpVer"></span></h2>
+    <button class="icon-btn" id="helpX" aria-label="Chiudi">✕</button>
+  </div>
+  <div class="help-body">
+    <input type="text" id="helpQ" placeholder="Cerca nella guida…">
+    <div id="helpList"></div>
+  </div>
+</div>
+<nav id="nav">
+  <button data-v="check" class="on"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6l1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17"/></svg>Checklist</button>
+  <button data-v="pz"><svg viewBox="0 0 24 24"><path d="M8 3h8v11l-4 4-4-4V3z"/><path d="M8 8h8"/></svg>Piazzole</button>
+  <button data-v="log"><svg viewBox="0 0 24 24"><path d="M12 8v4l3 2M12 21a9 9 0 110-18 9 9 0 010 18z"/></svg>Registro</button>
+  <button data-v="cons"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4zM5 4a3 3 0 013 3v13"/></svg>Consulta</button>
+  <button data-v="fine"><svg viewBox="0 0 24 24"><path d="M4 6l8 6 8-6M4 6h16v12H4z"/></svg>Referto</button>
+</nav>
+<script>
+/* ================== DATI ================== */
+const CHECK = [
+ {fase:"Preliminari", items:[
+  [1,"Contattare il Responsabile dell'organizzazione"],
+  [2,"Presenza di indicazioni stradali (ove previsto)"]]},
+ {fase:"Prima della ricognizione", items:[
+  [3,"Presenza personale dell'organizzazione"],
+  [4,"Presenza Responsabile dell'organizzazione"],
+  [5,"Tabella Logistica"],
+  [6,"Elenco piazzole con nominativi"],
+  [7,"Pianta cartacea del percorso"],
+  [8,"Cronotachigrafo"],
+  [9,"Personale addetto al cronotachigrafo (indica il nome in nota)"],
+  [10,"Attrezzature accessorie in caso di maltempo"],
+  [11,"Servizi igienici"],
+  [12,"Area attesa/ritrovo coperta in caso di maltempo"]]},
+ {fase:"Ricognizione — percorso", hint:"Le verifiche 13–29 sulla singola piazzola si compilano nel tab Piazzole, dentro ogni piazzola (filtrate per tipo: mobile, area di tiro, più sagome).", items:[
+  [22,"Segnalazione del percorso"],
+  [23,"Cartelli di segnalazione pericolo su sentieri/strade di accesso"],
+  [30,"Bindelle che indicano il percorso e chiusura dei sentieri accessibili al pubblico"],
+  [31,"Cartelli di attenzione chiari, inequivocabili, con data dell'evento"],
+  [32,"Posizione punto di ristoro in sicurezza"],
+  [33,"Vie di fuga per emergenze concordate e segnalate"],
+  [34,"Modo idoneo per avvisare gli arcieri in gara in caso di necessità"],
+  [35,"Orari di ritrovo, radio/contatti telefonici, area premiazioni"]]},
+ {fase:"Pre-gara", items:[
+  [36,"Presenza del Responsabile dell'Organizzazione"],
+  [37,"Tabella Logistica e Regolamento sportivo a portata di mano"],
+  [38,"Verifica funzionamento radio e/o cellulare"],
+  [39,"Verifica del campo gara"],
+  [40,"Presenza del cronotachigrafo e dell'addetto"],
+  [41,"Ambulanza (ove presente) e scambio dei contatti telefonici"],
+  [42,"Verifica rispetto orario di inizio gara"],
+  ["B","BRIEFING: istruzioni chiare; ricordare attrezzatura integra e frecce segnate"],
+  ["C","Chiamata piazzole con indicazione accompagnatori e orario inizio tiri"]]},
+ {fase:"Gara", items:[
+  [43,"Presenza del Responsabile dell'Organizzazione"]]},
+ {fase:"Fine-gara", items:[
+  [44,"Tutti gli arcieri fuori dal campo prima di congedare l'ambulanza; giro finale con l'ASD"],
+  [45,"Premiazioni conformi al Regolamento Sportivo"],
+  [46,"Modulistica compilata e relazione con gli accadimenti della giornata"],
+  [47,"Invio documenti e relazione alla Commissione GdG (gdgcsain@gmail.com) o via App"],
+  [48,"Area premiazioni predisposta; 1°, 2° e 3° classificato chiaramente identificati"]]}
+];
+
+/* dist: [G1,G2,G3,G4] per trad e tech; mob = mobili; pfRule = regola picchetto rosso */
+const GARE = [
+ {id:"f44", n:"44", s:"Fusion", amb:"out", frecce:"44 frecce · 20 piazzole (5 per gruppo)",
+  dist:{trad:[35,30,25,15], tech:[45,40,30,20], mob:{2:25,3:20}},
+  pf:"≤ metà della distanza max Master tradizionali",
+  pts:[["Unica tabella",[["Perfect",14],["Super Spot",12],["Spot",10],["Sagoma",6]]]], max:616,
+  note:["Ogni arciere scocca 1 sola freccia per sagoma; 1–3 frecce per piazzola.",
+   "Piazzole con DUE sagome: una per gruppo è a tempo limitato — 25″ per 2 frecce (esenti AN, CO, SL, SI, FS, RI, Prime Frecce e Lupetti).",
+   "Piazzole con TRE sagome: almeno due del gruppo designato; la terza solo del gruppo immediatamente inferiore.",
+   "Composizione per gruppo: 2 piazzole ×3 sagome, 2 ×2 sagome, 1 ×1 sagoma (mobile in G2 e G3).",
+   "Scout tirano sempre dai picchetti/aree Master tradizionali."],
+  v1010:"22 bersagli in 10 piazzole · 1×3 e 1×2 sagome per gruppo · 1 sola mobile (G2 o G3) · almeno 3+3 piazzole con area di tiro · picchetti differenziati o sostituiti tra i giri."},
+ {id:"t60", n:"60", s:"Track", amb:"out", frecce:"max 60 frecce · 20 piazzole (5 per gruppo)",
+  dist:{trad:[40,35,25,15], tech:[55,45,30,20]},
+  pf:"≤ metà della distanza max Master tradizionali",
+  pts:[["1ª freccia",[["Perfect",28],["Super Spot",26],["Spot",24],["Sagoma",20]]],
+       ["2ª freccia",[["Perfect",20],["Super Spot",18],["Spot",16],["Sagoma",12]]],
+       ["3ª freccia",[["Perfect",12],["Super Spot",10],["Spot",8],["Sagoma",4]]]], max:560,
+  note:["Vale il solo punteggio della PRIMA freccia a punto per piazzola.",
+   "Max 3 frecce da 3 distanze diverse: da un picchetto/area su 3 bersagli, o da 3 picchetti sullo stesso bersaglio.",
+   "Tirano sempre per primi gli arcieri CO/SL/SI/FS.",
+   "Piazzole con tre sagome: almeno due del gruppo designato, la terza max gruppo immediatamente inferiore.",
+   "Almeno 6 piazzole con area di tiro."],
+  v1010:"10 piazzole: G1×3, G2×2, G3×3, G4×2 · almeno 3+3 con aree di tiro · picchetti differenziati o sostituiti tra i giri."},
+ {id:"r40", n:"40", s:"Round", amb:"out", frecce:"max 40 frecce · 20 piazzole",
+  dist:{trad:[30,30,25,15], tech:[40,40,30,20], mob:{2:30,3:20}},
+  pf:"≤ metà della distanza max Master tradizionali",
+  pts:[["1ª freccia",[["Perfect",16],["Super Spot",14],["Spot",12],["Sagoma",8]]],
+       ["2ª freccia",[["Perfect",14],["Super Spot",12],["Spot",10],["Sagoma",6]]]], max:600,
+  note:["2 frecce per piazzola: da un picchetto (o area) su 2 bersagli diversi, o da 2 picchetti sullo stesso bersaglio.",
+   "Composizione: G1 5 pz, G2 4 pz + 1 mobile, G3 4 pz + 1 mobile, G4 5 pz.",
+   "Almeno 6 piazzole con area di tiro.",
+   "Scout dai picchetti/aree Master tradizionali."],
+  v1010:"10 piazzole: G1×3, G2×2, G3×3, G4×2 · una sola mobile (G2 o G3) · almeno 3+3 con aree di tiro."},
+ {id:"tg60", n:"60", s:"Target", amb:"out", frecce:"60 frecce · 20 piazzole (5 per gruppo)",
+  dist:{trad:[40,30,25,15], tech:[55,45,30,20]},
+  pf:"≤ metà della distanza max Master tradizionali",
+  pts:[["1ª freccia",[["Perfect",16],["Super Spot",14],["Spot",12],["Sagoma",7]]],
+       ["2ª freccia",[["Perfect",13],["Super Spot",11],["Spot",9],["Sagoma",5]]],
+       ["3ª freccia",[["Perfect",10],["Super Spot",8],["Spot",6],["Sagoma",3]]]], max:780,
+  note:["Sempre 3 frecce per piazzola; somma dei 3 punteggi.",
+   "Una piazzola per gruppo è a tempo limitato: 30″ da 3 picchetti diversi, 25″ da picchetto unico (esenti CO/SL/SI/FS/AN/RI, Prime Frecce, Lupetti).",
+   "Tirano sempre per primi gli arcieri CO/SL/SI/FS.",
+   "Piazzole G4: obbligatorio allestirle con 3 sagome distinte.",
+   "Piazzole con tre sagome: almeno due del gruppo designato, la terza max gruppo inferiore."],
+  v1010:"10 piazzole: G1×3, G2×2, G3×3, G4×2 · almeno 3+3 con aree di tiro · picchetti differenziati o sostituiti tra i giri."},
+ {id:"fs40", n:"40", s:"Free-Shot", amb:"out", frecce:"max 40 frecce · 20 piazzole · 40 bersagli",
+  dist:{trad:[30,30,30,15], tech:[40,40,40,20]},
+  pf:"distanza massima 20 m",
+  pts:[["1ª e 2ª freccia",[["Perfect",20],["Super Spot",18],["Spot",15],["Sagoma",10]]]], max:800,
+  note:["TUTTE le piazzole con aree di tiro, per tutte le categorie.",
+   "2 frecce su 2 bersagli diversi, nessuna sequenza obbligata — MA entrambe le frecce sulla stessa sagoma = annullamento della serie.",
+   "Aree evidenziate da picchetto o bindella: bianca tecnologici, gialla tradizionali.",
+   "Scout dall'area di tiro Master tradizionali."],
+  v1010:"10 piazzole da ripetere due volte: gruppi 1/2/3 → 8 pz, gruppo 4 → 2 pz · aree con angolazioni diverse o sostituite tra i giri."},
+ {id:"rt25o", n:"25", s:"3D Round&Trophy", amb:"linea-out", frecce:"Round 40 + Trophy 20 frecce · 20 corsie",
+  dist:{lineamax:[25,25,25,20], lineamin:12, corsie:[2,2,12,4], corsie1010:[1,1,6,2]},
+  pf:"linea rossa 5 m avanzata rispetto ai tradizionali",
+  pts:[["Round 1ª",[["Perfect",14],["Super Spot",12],["Spot",10],["Sagoma",6]]],
+       ["Round 2ª",[["Perfect",12],["Super Spot",10],["Spot",8],["Sagoma",4]]],
+       ["Trophy (unica)",[["Perfect",26],["Super Spot",22],["Spot",18],["Sagoma",12]]]], max:1040,
+  note:["Round: 2 frecce per corsia allo stesso bersaglio (max 520). Trophy: 1 freccia per corsia (max 520).",
+   "Campo min 20×40 m (20 corsie) · corsia ≥80 cm singolo, ≥150 cm in coppia (outdoor).",
+   "Distanza minima per tutti i gruppi 12 m, max 25 m (G4 20 m).",
+   "Freccia su sagoma di una corsia vicina: annullata, senza altre conseguenze.",
+   "Semaforo/monitor: 90″ per 2 frecce, 60″ per 1."],
+  v1010:"Corsie 10+10: G1×1, G2×1, G3×6, G4×2 · tra i due giri l'organizzazione modifica le distanze dei bersagli."},
+ {id:"rt40o", n:"40", s:"3D Round&Trophy", amb:"linea-out", frecce:"Round 40 + Trophy 20 frecce · 20 corsie",
+  dist:{lineamaxT:[40,40,30], lineamaxTr:[32,32,20], lineamin:"22 (dalla linea tecnologici) · max 40", corsie:[4,4,12], corsie1010:[2,2,6]},
+  pf:"linea rossa 5 m avanzata rispetto ai tradizionali",
+  pts:[["Round 1ª",[["Perfect",14],["Super Spot",12],["Spot",10],["Sagoma",6]]],
+       ["Round 2ª",[["Perfect",12],["Super Spot",10],["Spot",8],["Sagoma",4]]],
+       ["Trophy (unica)",[["Perfect",26],["Super Spot",22],["Spot",18],["Sagoma",12]]]], max:1040,
+  note:["Solo gruppi 1–2–3. Due linee di tiro: BIANCA max 40 m (CO/SL/SI/FS/RI) e GIALLA 8 m più avanzata (AN/RT/RM/AS/LB).",
+   "Campo min 20×50 m per 20 corsie (outdoor).",
+   "Round: 2 frecce per corsia (max 520). Trophy: 1 freccia (max 520).",
+   "Semaforo/monitor: 90″ per 2 frecce, 60″ per 1."],
+  v1010:"Corsie 10+10: G1×2, G2×2, G3×6 · tra i giri si modificano le distanze."},
+ {id:"rt25i", n:"25", s:"3D R&T Indoor", amb:"in", frecce:"Round 40 + Trophy 20 frecce",
+  dist:{lineamax:[25,25,25,20], lineamin:12, corsie:[2,2,12,4], corsie1010:[1,1,6,2]},
+  pf:"linea rossa 5 m avanzata",
+  pts:[["Round 1ª",[["Perfect",14],["Super Spot",12],["Spot",10],["Sagoma",6]]],
+       ["Round 2ª",[["Perfect",12],["Super Spot",10],["Spot",8],["Sagoma",4]]],
+       ["Trophy (unica)",[["Perfect",26],["Super Spot",22],["Spot",18],["Sagoma",12]]]], max:1040,
+  note:["Struttura min 20×34 m (20 corsie) o 14×34 m (10+10) · altezza consigliata ≥5 m.",
+   "Corsia ≥80 cm singolo, ≥170 cm in coppia · max 2 arcieri per corsia sulla linea.",
+   "Battifreccia dietro ogni bersaglio (max 1 m) + rete battifreccia di fondo h ≥3 m.",
+   "Linea attesa a 2 m dalla linea di tiro, corridoio ≥3 m."],
+  v1010:"Corsie 10+10: G1×1, G2×1, G3×6, G4×2 · distanze modificate tra i giri."},
+ {id:"rt25i2d", n:"25", s:"2D Round Trophy", amb:"in", frecce:"come 25 3D R&T",
+  dist:{lineamax:[25,25,25,20], lineamin:12, corsie:[2,2,12,4]},
+  pf:"linea rossa 5 m avanzata",
+  pts:[["Round 1ª",[["Perfect",14],["Super Spot",12],["Spot",10],["Sagoma",6]]],
+       ["Round 2ª",[["Perfect",12],["Super Spot",10],["Spot",8],["Sagoma",4]]],
+       ["Trophy (unica)",[["Perfect",26],["Super Spot",22],["Spot",18],["Sagoma",12]]]], max:1040,
+  note:["Variante con battifreccia e visuali 2D di sagome animali.",
+   "Battifreccia consigliato: Ø130 per gruppi 1–2, Ø90 per gruppi 3–4.",
+   "Visuali con linea di ingombro sagoma, un solo spot/superspot/perfect; evidenziare le linee valide se stampate multiple."],
+  v1010:"Come 25 3D Round&Trophy."},
+ {id:"rt40i", n:"40", s:"3D R&T Indoor", amb:"in", frecce:"Round 40 + Trophy 20 frecce",
+  dist:{lineamaxT:[40,40,30], lineamaxTr:[32,32,20], lineamin:"22 (linea tecnologici) · max 40", corsie:[4,4,12], corsie1010:[2,2,6]},
+  pf:"linea rossa 5 m avanzata",
+  pts:[["Round 1ª",[["Perfect",14],["Super Spot",12],["Spot",10],["Sagoma",6]]],
+       ["Round 2ª",[["Perfect",12],["Super Spot",10],["Spot",8],["Sagoma",4]]],
+       ["Trophy (unica)",[["Perfect",26],["Super Spot",22],["Spot",18],["Sagoma",12]]]], max:1040,
+  note:["Struttura min 20×40 m · due linee: BIANCA max 40 m e GIALLA +8 m avanzata.",
+   "Solo gruppi 1–2–3.",
+   "Battifreccia dietro ogni bersaglio + rete di fondo h ≥3 m."],
+  v1010:"Corsie 10+10: G1×2, G2×2, G3×6."}
+];
+</script>
+<script>
+/* ================== STATO ================== */
+const S = JSON.parse(localStorage.getItem('gdg-state') || 'null') || {
+  gara:{}, check:{}, notes:{}, rel:{}, faseOpen:{}
+};
+const save = () => localStorage.setItem('gdg-state', JSON.stringify(S));
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ================== NAV ================== */
+$$('#nav button').forEach(b => b.onclick = () => {
+  $$('#nav button').forEach(x => x.classList.toggle('on', x === b));
+  $$('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
+  window.scrollTo({top:0});
+});
+$('#v-check').classList.add('on');
+
+/* ================== DATI GARA ================== */
+const garaFields = ['gTipo','gData','gLoc','gGdg','gAsd','gResp','gTel','gAmb'];
+const tipoSel = $('#gTipo');
+tipoSel.innerHTML = '<option value="">—</option>' + GARE.map(g =>
+  `<option value="${g.id}">${g.n} ${g.s}${g.amb==='in'?' (Indoor)':g.amb==='linea-out'?' (in linea Outdoor)':''}</option>`).join('');
+garaFields.forEach(id => {
+  const el = $('#'+id);
+  el.value = S.gara[id] || '';
+  el.oninput = () => { S.gara[id] = el.value; save(); updateCtx(); };
+});
+function updateCtx(){
+  const g = GARE.find(x => x.id === S.gara.gTipo);
+  const parts = [];
+  if (g) parts.push(g.n + ' ' + g.s);
+  if (S.gara.gLoc) parts.push(S.gara.gLoc);
+  if (S.gara.gData) parts.push(S.gara.gData.split('-').reverse().join('/'));
+  $('#hdCtx').textContent = parts.length ? parts.join(' · ') : 'Nessuna gara attiva — imposta i dati in Checklist';
+}
+$('#btnReset').onclick = () => {
+  if (!confirm('Azzerare checklist, dati gara e relazione per una nuova gara?')) return;
+  S.gara = {}; S.check = {}; S.notes = {}; S.rel = {}; save();
+  garaFields.forEach(id => $('#'+id).value = '');
+  ['rPart','rIni','rFine','rMat','rAnn','rSanz','rCrit','rPrem','rNote'].forEach(id => $('#'+id).value = '');
+  renderCheck(); updateCtx();
+};
+
+/* ================== CHECKLIST ================== */
+function renderCheck(){
+  const box = $('#ckList'); box.innerHTML = '';
+  const curFi = CHECK.findIndex(f => f.items.some(([id]) => !S.check[id]));
+  CHECK.forEach((f, fi) => {
+    const div = document.createElement('div');
+    const explicit = S.faseOpen[fi];
+    const open = explicit === true || (explicit === undefined && fi === (curFi < 0 ? CHECK.length - 1 : curFi));
+    div.className = 'fase' + (open ? '' : ' closed');
+    const done = f.items.filter(it => S.check[it[0]]).length;
+    div.innerHTML = `
+      <div class="fase-hd" data-fi="${fi}">
+        <h3>${f.fase}</h3><span class="cnt">${done}/${f.items.length}</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="fase-body">${f.hint ? '<div class="fase-hint">' + f.hint + '</div>' : ''}` +
+      f.items.map(([id, txt]) => {
+        const st = S.check[id] || '';
+        const note = S.notes[id] || '';
+        return `<div class="ck">
+          <span class="num">${id}</span>
+          <div class="txt">${esc(txt)}
+            <div class="note-line"><input type="text" placeholder="Nota…" data-note="${id}" value="${esc(note)}"></div>
+          </div>
+          <div class="okko">
+            <button class="ok ${st==='OK'?'on':''}" data-ck="${id}" data-v="OK">OK</button>
+            <button class="ko ${st==='KO'?'on':''}" data-ck="${id}" data-v="KO">KO</button>
+          </div>
+        </div>`;
+      }).join('') + `</div>`;
+    box.appendChild(div);
+  });
+  box.querySelectorAll('.fase-hd').forEach(h => h.onclick = () => {
+    const fi = h.dataset.fi;
+    S.faseOpen[fi] = h.parentElement.classList.contains('closed');
+    save(); h.parentElement.classList.toggle('closed');
+  });
+  box.querySelectorAll('[data-ck]').forEach(b => b.onclick = () => {
+    const id = b.dataset.ck;
+    S.check[id] = (S.check[id] === b.dataset.v) ? '' : b.dataset.v;
+    save(); renderCheck();
+  });
+  box.querySelectorAll('[data-note]').forEach(i => i.oninput = () => {
+    S.notes[i.dataset.note] = i.value; save(); updateProgress();
+  });
+  updateProgress();
+}
+function updateProgress(){
+  const all = CHECK.flatMap(f => f.items.map(i => i[0]));
+  const done = all.filter(id => S.check[id]).length;
+  const kos = all.filter(id => S.check[id] === 'KO');
+  $('#pTot').textContent = done + '/' + all.length;
+  $('#pBar').style.width = (100 * done / all.length) + '%';
+  $('#koSummary').innerHTML = kos.length
+    ? `<div class="ko-flag" style="margin-top:8px;margin-bottom:0"><b>${kos.length} punto/i KO:</b> n. ${kos.join(', ')} — verranno riportati nella relazione.</div>`
+    : '';
+}
+renderCheck(); updateCtx();
+
+/* ================== REGOLAMENTI ================== */
+const grid = $('#regGrid');
+grid.innerHTML = GARE.map(g => `
+  <button class="gara-tile" data-g="${g.id}">
+    <div class="gt-n">${g.n} <span style="font-size:.55em;font-weight:700">${esc(g.s)}</span></div>
+    <div class="gt-s">${esc(g.frecce.split('·')[0].trim())} · max ${g.max} pt</div>
+    <span class="badge ${g.amb==='in'?'ind':''}">${g.amb==='in'?'Indoor':g.amb==='linea-out'?'In linea outdoor':'Percorso outdoor'}</span>
+  </button>`).join('');
+grid.querySelectorAll('[data-g]').forEach(t => t.onclick = () => showGara(t.dataset.g));
+
+function distBlock(g){
+  const catL = ['Gruppo 1','Gruppo 2','Gruppo 3','Gruppo 4'];
+  if (g.dist.trad){
+    let h = catL.map((c,i) => `<div class="dist-row"><span>${c}</span>
+      <span><span class="pk g"><i></i><b>${g.dist.trad[i]} m</b></span> &nbsp; <span class="pk b"><i></i><b>${g.dist.tech[i]} m</b></span></span></div>`).join('');
+    if (g.dist.mob) h += Object.entries(g.dist.mob).map(([gr,m]) =>
+      `<div class="dist-row"><span>Mobile Gruppo ${gr}</span><span><b>${m} m</b> tutte le categorie</span></div>`).join('');
+    h += `<div class="dist-row"><span>Prime Frecce / Lupetti</span><span><span class="pk r"><i></i><b>${esc(g.pf)}</b></span></span></div>`;
+    return h;
+  }
+  /* gare in linea */
+  let h = '';
+  if (g.dist.lineamaxT){
+    h += catL.slice(0,3).map((c,i) => `<div class="dist-row"><span>${c} — ${g.dist.corsie[i]} corsie</span>
+      <span><span class="pk b"><i></i><b>${g.dist.lineamaxT[i]} m</b></span> &nbsp; <span class="pk g"><i></i><b>${g.dist.lineamaxTr[i]} m</b></span></span></div>`).join('');
+  } else {
+    h += catL.map((c,i) => `<div class="dist-row"><span>${c} — ${g.dist.corsie[i]} corsie</span><span><b>max ${g.dist.lineamax[i]} m</b></span></div>`).join('');
+  }
+  h += `<div class="dist-row"><span>Distanza minima</span><span><b>${g.dist.lineamin} m</b></span></div>`;
+  h += `<div class="dist-row"><span>Prime Frecce / Lupetti</span><span><span class="pk r"><i></i><b>${esc(g.pf)}</b></span></span></div>`;
+  return h;
+}
+function showGara(id){
+  const g = GARE.find(x => x.id === id);
+  $('#regIndex').style.display = 'none';
+  const d = $('#regDetail'); d.style.display = 'block';
+  d.innerHTML = `
+    <button class="btn ghost small back">← Tutte le gare</button>
+    <div class="card">
+      <h2 style="font-size:1.6rem">${g.n} ${esc(g.s)} <span class="badge ${g.amb==='in'?'ind':''}">${g.amb==='in'?'Indoor':g.amb==='linea-out'?'In linea outdoor':'Percorso outdoor'}</span></h2>
+      <p class="muted" style="margin:4px 0 0">${esc(g.frecce)} · punteggio massimo <span class="maxpt">${g.max}</span></p>
+    </div>
+    <div class="card"><h2>Distanze massime</h2>${distBlock(g)}</div>
+    <div class="card"><h2>Punteggi</h2>` +
+      g.pts.map(([t,rows]) => `<table class="pts"><tr><th colspan="2">${esc(t)}</th></tr>` +
+        rows.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td></tr>`).join('') + `</table>`).join('') +
+    `</div>
+    <div class="card"><h2>Prescrizioni chiave</h2><ul class="tight">${g.note.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>
+    <div class="card"><h2>Versione 10+10</h2><p style="margin:4px 0;font-size:.92rem">${esc(g.v1010)}</p></div>`;
+  d.querySelector('.back').onclick = () => { d.style.display='none'; $('#regIndex').style.display='block'; };
+  window.scrollTo({top:0});
+}
+</script>
+<script>
+/* ================== STRUMENTI ================== */
+/* Gruppo sagoma */
+$('#tGrCm').oninput = () => {
+  const v = parseFloat($('#tGrCm').value);
+  const r = $('#tGrRes');
+  if (isNaN(v) || v <= 0){ r.className = 'res'; return; }
+  let gr, range;
+  if (v > 25){ gr = 1; range = '> 25 cm'; }
+  else if (v > 20){ gr = 2; range = '20–25 cm'; }
+  else if (v > 15){ gr = 3; range = '15–20 cm'; }
+  else { gr = 4; range = '< 15 cm'; }
+  r.className = 'res show neutral';
+  r.innerHTML = `<span class="big">Gruppo ${gr}</span> Spot ${range}. Il Perfect deve essere presente su tutti i bersagli. Il bersaglio più distante determina il gruppo della piazzola.`;
+};
+
+/* Verifica distanza */
+$('#tDGara').innerHTML = GARE.filter(g => g.dist.trad).map(g => `<option value="${g.id}">${g.n} ${g.s}</option>`).join('');
+['tDGara','tDGr','tDCat','tDVal'].forEach(id => $('#'+id).oninput = checkDist);
+function checkDist(){
+  const g = GARE.find(x => x.id === $('#tDGara').value);
+  const grV = $('#tDGr').value, cat = $('#tDCat').value;
+  const val = parseFloat($('#tDVal').value);
+  const r = $('#tDRes');
+  let max, label;
+  if (grV.startsWith('mob')){
+    const grN = grV.slice(3);
+    if (!g.dist.mob || !g.dist.mob[grN]){ r.className='res show bad'; r.innerHTML = `In questa gara non è prevista la piazzola mobile di gruppo ${grN}.`; return; }
+    max = g.dist.mob[grN]; label = `Mobile G${grN} · tutte le categorie`;
+  } else {
+    const i = parseInt(grV);
+    if (cat === 'pf'){
+      if (g.id === 'fs40'){ max = 20; label = 'Prime Frecce/Lupetti (Free-Shot: max assoluto 20 m)'; }
+      else { max = g.dist.trad[i] / 2; label = `Prime Frecce/Lupetti · metà del max tradizionali G${i+1}`; }
+    } else {
+      max = g.dist[cat === 'tech' ? 'tech' : 'trad'][i];
+      label = (cat === 'tech' ? 'Picchetto bianco (tecnologici)' : 'Picchetto giallo (tradizionali)') + ` · G${i+1}`;
+    }
+  }
+  const tol = max * 1.05;
+  if (isNaN(val)){
+    r.className = 'res show neutral';
+    r.innerHTML = `<span class="big">max ${max} m</span> ${label}. Con tolleranza 5% (solo conformazione terreno/sicurezza): fino a ${tol.toFixed(1)} m.`;
+    return;
+  }
+  if (val <= max){ r.className = 'res show good'; r.innerHTML = `<span class="big">CONFORME</span> ${val} m ≤ ${max} m (${label}).`; }
+  else if (val <= tol){ r.className = 'res show neutral'; r.innerHTML = `<span class="big">IN TOLLERANZA 5%</span> ${val} m supera i ${max} m ma rientra nei ${tol.toFixed(1)} m — ammesso SOLO per conformazione del terreno o sicurezza del tiro (Reg. Sportivo Cap. V Par. I f).`; }
+  else { r.className = 'res show bad'; r.innerHTML = `<span class="big">NON CONFORME</span> ${val} m oltre il limite di ${max} m anche con tolleranza 5% (${tol.toFixed(1)} m). Richiedere lo spostamento.`; }
+}
+
+/* Validità gara */
+['tVNat','tVIneff','tVSic'].forEach(id => $('#'+id).oninput = checkVal);
+function checkVal(){
+  const nat = +$('#tVNat').value || 0, ine = +$('#tVIneff').value || 0, sic = +$('#tVSic').value || 0;
+  const r = $('#tVRes'); r.classList.add('show');
+  const tot = nat + ine + sic, imp = ine + sic;
+  const fails = [];
+  if (ine > 3) fails.push(`inefficienza imputabile: ${ine} > max 3`);
+  if (sic > 2) fails.push(`sicurezza imputabile: ${sic} > max 2`);
+  if (imp > 3) fails.push(`totale imputabili all'organizzazione: ${imp} > max 3`);
+  if (tot > 5) fails.push(`totale piazzole annullate: ${tot} > max 5`);
+  if (nat > 5) fails.push(`non imputabili: ${nat} > max 5`);
+  if (tot === 0){ r.className = 'res show neutral'; r.innerHTML = 'Nessuna piazzola annullata.'; return; }
+  if (fails.length){
+    r.className = 'res show bad';
+    r.innerHTML = `<span class="big">GARA NON VALIDA</span>Da declassare ad Amichevole: ${fails.join('; ')}.<br><small>Se l'ASD la svolge come amichevole: nessun rimborso quote e premiazione regolare. Se non la svolge: rimborso quote agli iscritti (Cap. IV Par. XI).</small>`;
+  } else {
+    r.className = 'res show good';
+    r.innerHTML = `<span class="big">GARA VALIDA</span>${tot} piazzole annullate (${nat} non imputabili · ${ine} inefficienza · ${sic} sicurezza) entro i limiti. Ricorda: sospensione definitiva richiede almeno 12 piazzole completate da tutte le squadre.`;
+  }
+}
+
+/* Timer */
+let tmSec = 0, tmInt = null, tmTotal = 0, audioCtx = null;
+function beep(n = 1, freq = 880){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    for (let i = 0; i < n; i++){
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.frequency.value = freq; o.connect(g); g.connect(audioCtx.destination);
+      const t0 = audioCtx.currentTime + i * .45;
+      g.gain.setValueAtTime(.4, t0); g.gain.exponentialRampToValueAtTime(.001, t0 + .3);
+      o.start(t0); o.stop(t0 + .32);
+    }
+  }catch(e){}
+}
+function tmShow(){
+  const d = $('#tmDisp');
+  const m = Math.floor(tmSec / 60), s = tmSec % 60;
+  d.textContent = m + ':' + String(s).padStart(2,'0');
+  d.className = 'timer-disp' + (tmSec === 0 ? ' end' : tmSec <= 15 ? ' warn' : '');
+}
+$$('.preset-grid button').forEach(b => b.onclick = () => {
+  clearInterval(tmInt); tmInt = null;
+  tmTotal = tmSec = +b.dataset.t; tmShow();
+});
+$('#tmStart').onclick = () => {
+  if (!tmSec || tmInt) return;
+  beep(1, 660);
+  tmInt = setInterval(() => {
+    tmSec--;
+    if (tmSec === 15 && tmTotal > 20) beep(1, 990);
+    if (tmSec <= 0){ tmSec = 0; clearInterval(tmInt); tmInt = null; beep(3, 880); }
+    tmShow();
+  }, 1000);
+};
+$('#tmStop').onclick = () => { clearInterval(tmInt); tmInt = null; tmSec = tmTotal; tmShow(); };
+
+/* ================== RELAZIONE ================== */
+const relFields = ['rPart','rIni','rFine','rMat','rAnn','rSanz','rCrit','rPrem','rNote'];
+relFields.forEach(id => {
+  const el = $('#'+id);
+  el.value = S.rel[id] || '';
+  el.oninput = () => { S.rel[id] = el.value; save(); };
+});
+function buildRel(){
+  const g = GARE.find(x => x.id === S.gara.gTipo);
+  const dt = S.gara.gData ? S.gara.gData.split('-').reverse().join('/') : '____';
+  const kos = CHECK.flatMap(f => f.items).filter(([id]) => S.check[id] === 'KO')
+    .map(([id, txt]) => `  • n.${id} — ${txt}${S.notes[id] ? ' [nota: ' + S.notes[id] + ']' : ''}`);
+  const okAll = CHECK.flatMap(f => f.items).every(([id]) => S.check[id] === 'OK');
+  const L = [];
+  L.push('RELAZIONE GIUDICE DI GARA CSAIN — TIRO CON L\'ARCO 3D');
+  L.push('======================================================');
+  L.push(`Tipo di gara: ${g ? g.n + ' ' + g.s : '____'}`);
+  L.push(`Data: ${dt}   Località: ${S.gara.gLoc || '____'}`);
+  L.push(`Giudice di gara: ${S.gara.gGdg || '____'}`);
+  L.push(`ASD organizzatrice: ${S.gara.gAsd || '____'}`);
+  L.push(`Responsabile organizzazione: ${S.gara.gResp || '____'}${S.gara.gTel ? ' — tel. ' + S.gara.gTel : ''}`);
+  L.push(`Ambulanza presente: ${S.gara.gAmb || '____'}`);
+  if (S.rel.rPart) L.push(`Partecipanti: ${S.rel.rPart}`);
+  if (S.rel.rIni || S.rel.rFine) L.push(`Orario gara: ${S.rel.rIni || '__'} – ${S.rel.rFine || '__'}`);
+  L.push('');
+  L.push('CONTROLLI (Check-list GdG CSAIN)');
+  const all = CHECK.flatMap(f => f.items);
+  const done = all.filter(([id]) => S.check[id]).length;
+  L.push(`Voci verificate: ${done}/${all.length}` + (okAll ? ' — tutte conformi (OK)' : ''));
+  if (kos.length){ L.push('Punti NON conformi (KO):'); L.push(...kos); }
+  else if (done) L.push('Nessun punto KO rilevato.');
+  if (S.rel.rMat) L.push(`Controllo materiali: ${S.rel.rMat}`);
+  L.push('');
+  L.push(`Piazzole annullate: ${S.rel.rAnn || 'nessuna'}`);
+  L.push(`Sanzioni: ${S.rel.rSanz || 'nessuna'}`);
+  L.push('');
+  L.push('CRITICITÀ E FATTI RILEVANTI');
+  L.push(S.rel.rCrit || 'Nessuna criticità da segnalare.');
+  L.push('');
+  L.push(`Premiazioni: ${S.rel.rPrem || 'svolte regolarmente secondo Regolamento Sportivo'}`);
+  if (S.rel.rNote){ L.push(''); L.push('NOTE FINALI'); L.push(S.rel.rNote); }
+  L.push('');
+  L.push(`${S.gara.gLoc || ''} ${dt}`.trim());
+  L.push(`Il Giudice di Gara — ${S.gara.gGdg || ''}`);
+  return L.join('\n');
+}
+$('#rGen').onclick = () => {
+  $('#rOut').textContent = buildRel();
+  $('#rOutCard').style.display = 'block';
+  $('#rOutCard').scrollIntoView({behavior:'smooth'});
+};
+$('#rCopy').onclick = async () => {
+  try{ await navigator.clipboard.writeText($('#rOut').textContent); $('#rCopy').textContent = 'Copiato ✓';
+    setTimeout(() => $('#rCopy').textContent = 'Copia testo', 1600); }catch(e){ alert('Copia non riuscita: seleziona il testo manualmente.'); }
+};
+$('#rMail').onclick = () => {
+  const g = GARE.find(x => x.id === S.gara.gTipo);
+  const subj = `Relazione GdG — ${g ? g.n + ' ' + g.s : 'gara'} ${S.gara.gLoc || ''} ${S.gara.gData || ''}`.trim();
+  location.href = 'mailto:gdgcsain@gmail.com?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent($('#rOut').textContent);
+};
+$('#rShare').onclick = async () => {
+  const txt = $('#rOut').textContent;
+  if (navigator.share){ try{ await navigator.share({title:'Relazione GdG CSAIN', text:txt}); }catch(e){} }
+  else alert('Condivisione non supportata su questo dispositivo: usa Copia testo.');
+};
+
+/* ================== PWA ================== */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+<script>
+/* ================== PIAZZOLE / TABELLA LOGISTICA ================== */
+const PZCFG = {
+ f44:  {gr20:[5,5,5,5], gr10:[2,2,2,2], aree:[6,6], mob20:{2:1,3:1}, mob10:'una sola (G2 o G3)',
+        tempo:'Nelle piazzole con 2 sagome: una per gruppo a tempo limitato (25″ per 2 frecce)',
+        comp:'Per gruppo: 2 pz ×3 sagome, 2 ×2 sagome, 1 ×1 sagoma (la singola di G2/G3 è mobile)'},
+ t60:  {gr20:[5,5,5,5], gr10:[3,2,3,2], aree:[6,6], mob20:null,
+        comp:'Max 3 frecce da 3 distanze diverse per piazzola'},
+ r40:  {gr20:[5,5,5,5], gr10:[3,2,3,2], aree:[6,6], mob20:{2:1,3:1}, mob10:'una sola (G2 o G3)',
+        comp:'G1 5 pz · G2 4+1 mobile · G3 4+1 mobile · G4 5 pz'},
+ tg60: {gr20:[5,5,5,5], gr10:[3,2,3,2], aree:[6,6], mob20:null,
+        tempo:'Una piazzola per gruppo a tempo limitato: 30″ da 3 picchetti · 25″ da picchetto unico',
+        comp:'Sempre 3 frecce per piazzola · le pz di gruppo 4 vanno allestite con 3 sagome distinte'},
+ fs40: {gr20:null, gr10:[8,8,8,2], gr10note:'Gruppi 1/2/3 insieme: 8 pz · Gruppo 4: 2 pz', aree:[20,10], mob20:null,
+        comp:'2 bersagli per piazzola · TUTTE le piazzole con aree di tiro'},
+ rt25o:{linea:true, gr20:[2,2,12,4], gr10:[1,1,6,2]},
+ rt40o:{linea:true, gr20:[4,4,12,0], gr10:[2,2,6,0], nog4:true},
+ rt25i:{linea:true, gr20:[2,2,12,4], gr10:[1,1,6,2]},
+ rt25i2d:{linea:true, gr20:[2,2,12,4], gr10:[1,1,6,2]},
+ rt40i:{linea:true, gr20:[4,4,12,0], gr10:[2,2,6,0], nog4:true}
+};
+S.pz = S.pz || []; S.pzMode = S.pzMode || '20'; S.pzOpen = S.pzOpen || {};
+const PZBLANK = () => ({gr:'', nsag:'', tip:'', prod:'', mob:false, tempo:false, b:'', g:'', r:'', d:'', areaTec:false, areaTrad:false, seq:'', note:'', chk:{}, sag:[]});
+
+const seqOpts = n => n >= 3 ? ['ABC','CBA'] : n === 2 ? ['AB','BA'] : n === 1 ? ['A'] : [];
+const seqNorm = s => String(s || '').toUpperCase().replace(/[^ABC]/g, '');
+function pzGara(){ return GARE.find(x => x.id === S.gara.gTipo); }
+function pzCount(){ return S.pzMode === '10' ? 10 : 20; }
+function ensurePz(){ while (S.pz.length < 20) S.pz.push(PZBLANK()); S.pz.forEach(p => { p.chk = p.chk || {}; p.sag = p.sag || []; }); }
+
+function dstState(v, max){
+  if (v === '' || v == null || isNaN(parseFloat(v))) return null;
+  v = parseFloat(v);
+  if (v <= max) return 'ok';
+  if (v <= max * 1.05) return 'tol';
+  return 'ko';
+}
+
+function pzValidate(p){
+  const g = pzGara(); if (!g) return {st:'empty', alerts:[]};
+  const cfg = PZCFG[g.id] || {};
+  const A = []; let worst = null;
+  const rank = {ok:1, tol:2, ko:3};
+  const bump = s => { if (s && (!worst || rank[s] > rank[worst])) worst = s; };
+  const gi = parseInt(p.gr) - 1;
+
+  if (p.gr === '') return {st:'empty', alerts:[]};
+  if (cfg.nog4 && p.gr === '4'){ bump('ko'); A.push({t:'ko', msg:'In questa gara non è previsto il gruppo 4.'}); }
+
+  if (cfg.linea){
+    if (g.dist.lineamaxT){
+      const mB = g.dist.lineamaxT[gi], mG = g.dist.lineamaxTr[gi];
+      const sB = mB != null ? dstState(p.b, mB) : null, sG = mG != null ? dstState(p.g, mG) : null;
+      if (sB){ bump(sB); if (sB !== 'ok') A.push({t:sB, msg:`Linea bianca ${p.b} m vs max ${mB} m`}); }
+      if (sG){ bump(sG); if (sG !== 'ok') A.push({t:sG, msg:`Linea gialla ${p.g} m vs max ${mG} m`}); }
+    } else {
+      const sD = dstState(p.d, g.dist.lineamax[gi]);
+      if (sD){ bump(sD); if (sD !== 'ok') A.push({t:sD, msg:`Distanza ${p.d} m vs max ${g.dist.lineamax[gi]} m`}); }
+      if (p.d !== '' && parseFloat(p.d) < g.dist.lineamin){ bump('ko'); A.push({t:'ko', msg:`Distanza ${p.d} m sotto il minimo di ${g.dist.lineamin} m`}); }
+    }
+  } else if (p.mob){
+    const mm = g.dist.mob && g.dist.mob[p.gr];
+    if (!mm){ bump('ko'); A.push({t:'ko', msg:`Mobile non prevista per il gruppo ${p.gr} (${g.dist.mob ? 'ammessa: G' + Object.keys(g.dist.mob).join('/G') : 'nessuna mobile in questa gara'})`}); }
+    else {
+      const dv = p.d || p.g || p.b;
+      const sD = dstState(dv, mm);
+      if (sD){ bump(sD); if (sD !== 'ok') A.push({t:sD, msg:`Mobile ${dv} m vs max ${mm} m (tutte le categorie)`}); }
+      A.push({t:'ok', msg:'Carrello: velocità max 2 m/s · finestra ≥2,5 m · angolo ≤30° · cavo acciaio Ø ≥6 mm'});
+    }
+  } else {
+    const maxG = g.dist.trad[gi], maxB = g.dist.tech[gi];
+    const maxR = g.id === 'fs40' ? 20 : maxG / 2;
+    const sG = dstState(p.g, maxG), sB = dstState(p.b, maxB), sR = dstState(p.r, maxR);
+    if (sG){ bump(sG); if (sG !== 'ok') A.push({t:sG, msg:`Picchetto GIALLO ${p.g} m vs max ${maxG} m (G${p.gr} tradizionali)`}); }
+    if (sB){ bump(sB); if (sB !== 'ok') A.push({t:sB, msg:`Picchetto BIANCO ${p.b} m vs max ${maxB} m (G${p.gr} tecnologici)`}); }
+    if (sR){ bump(sR); if (sR !== 'ok') A.push({t:sR, msg:`Picchetto ROSSO ${p.r} m vs max ${maxR} m (PF/Lupetti)`}); }
+    if (p.r !== '' && p.g !== '' && parseFloat(p.r) > parseFloat(p.g)){
+      bump('ko'); A.push({t:'ko', msg:'Il picchetto ROSSO non può superare il picchetto GIALLO (Master trad.)'});
+    }
+    /* --- sagome aggiuntive: ogni sagoma verificata contro i limiti del SUO gruppo --- */
+    const nsagN = parseInt(p.nsag) || 0;
+    const sags = nsagN >= 2 ? (p.sag || []).slice(0, nsagN - 1) : [];
+    const distOf = o => parseFloat(o.g !== '' && o.g != null ? o.g : o.b) || 0;
+    sags.forEach((s, k) => {
+      if (!s) return;
+      const nS = k + 2;
+      if (!s.gr){
+        if (s.b || s.g){ bump('tol'); A.push({t:'tol', msg:`Sagoma ${nS}: indica il gruppo per verificarne le distanze`}); }
+        return;
+      }
+      const si2 = parseInt(s.gr) - 1;
+      const mG2 = g.dist.trad[si2], mB2 = g.dist.tech[si2];
+      const s2G = dstState(s.g, mG2), s2B = dstState(s.b, mB2);
+      if (s2G){ bump(s2G); if (s2G !== 'ok') A.push({t:s2G, msg:`Sagoma ${nS} (G${s.gr}) — picchetto GIALLO ${s.g} m vs max ${mG2} m del suo gruppo`}); }
+      if (s2B){ bump(s2B); if (s2B !== 'ok') A.push({t:s2B, msg:`Sagoma ${nS} (G${s.gr}) — picchetto BIANCO ${s.b} m vs max ${mB2} m del suo gruppo`}); }
+      if (parseInt(s.gr) < parseInt(p.gr)){
+        bump('ko'); A.push({t:'ko', msg:`Sagoma ${nS} di gruppo ${s.gr}, superiore al gruppo ${p.gr} della piazzola: rivedere la designazione del gruppo`});
+      }
+      if (distOf(s) && distOf(p) && distOf(s) > distOf(p)){
+        bump('ko'); A.push({t:'ko', msg:`Sagoma ${nS} più distante (${distOf(s)} m) della sagoma designata (${distOf(p)} m): il bersaglio più lontano determina il gruppo → la piazzola sarebbe G${s.gr}`});
+      }
+    });
+    if (['f44','t60','tg60'].includes(g.id) && nsagN === 3 && sags.length === 2 && sags.every(s => s && s.gr)){
+      const des = parseInt(p.gr);
+      const grs = [des, parseInt(sags[0].gr), parseInt(sags[1].gr)];
+      const cntDes = grs.filter(x => x === des).length;
+      const ok3 = cntDes >= 2 && grs.every(x => x === des || x === des + 1);
+      if (!ok3){ bump('ko'); A.push({t:'ko', msg:`Composizione ${grs.map(x => 'G' + x).join('+')} non ammessa in questa gara: almeno 2 sagome del gruppo designato (G${des}), la terza solo del gruppo immediatamente inferiore${des < 4 ? ' (G' + (des + 1) + ')' : ''}`}); }
+    }
+    /* sequenza di tiro: univoca, solo ABC/CBA (3 sagome) o AB/BA (2) — Cap. V Par. II c */
+    const sq = seqNorm(p.seq);
+    if (sq && nsagN){
+      const opts = seqOpts(nsagN);
+      if (!opts.includes(sq)){
+        bump('ko');
+        A.push({t:'ko', msg:`Sequenza "${p.seq}" non ammessa con ${nsagN} sagom${nsagN === 1 ? 'a' : 'e'}: consentite solo ${opts.join(' o ')} (Reg. Sportivo Cap. V Par. II c)`});
+      }
+    }
+    if (g.id === 'tg60' && p.gr === '4' && p.nsag && p.nsag !== '3'){
+      bump('ko'); A.push({t:'ko', msg:'60 Target: le piazzole di gruppo 4 vanno allestite con 3 sagome distinte'});
+    }
+    if (p.tempo){
+      const t = g.id === 'tg60' ? '30″ da 3 picchetti · 25″ da picchetto unico' : '25″ per 2 frecce';
+      A.push({t:'ok', msg:`Tempo limitato: ${t} · esenti tecnologici/RI/AN, Prime Frecce e Lupetti`});
+    }
+  }
+  if (!cfg.linea && p.chk && typeof PZCHK !== 'undefined'){
+    pzChkFor(p).forEach(([id, label]) => {
+      if (p.chk[id] === 'KO'){ bump('ko'); A.push({t:'ko', msg:`Verifica ${id} KO — ${label}`}); }
+    });
+  }
+  return {st: worst || 'ok', alerts: A};
+}
+
+function pzAlertsHtml(v){
+  return v.alerts.length ? `<div class="pz-alerts">${v.alerts.map(a =>
+    `<div class="pz-al ${a.t}">${a.t === 'ko' ? '✗ ' : a.t === 'tol' ? '⚠ ' : 'ℹ '}${esc(a.msg)}</div>`).join('')}</div>` : '';
+}
+
+function pzHead(p, i){
+  const g = pzGara();
+  const v = pzValidate(p);
+  const bits = [];
+  if (p.gr){
+    const xg = (p.sag || []).slice(0, Math.max(0, (parseInt(p.nsag) || 0) - 1)).filter(s => s && s.gr).map(s => 'G' + s.gr);
+    bits.push(xg.length ? 'G' + p.gr + '+' + xg.join('+') : 'G' + p.gr);
+  }
+  if (p.nsag) bits.push(p.nsag + ' sag.');
+  if (p.mob) bits.push('MOBILE'); if (p.tempo) bits.push('TEMPO');
+  const dd = [];
+  if (p.mob && p.d) dd.push(p.d + ' m');
+  else { if (p.b) dd.push('B ' + p.b); if (p.g) dd.push('G ' + p.g); if (p.r) dd.push('R ' + p.r); if (p.d) dd.push(p.d + ' m'); }
+  return `<div class="pz-n">${i + 1}</div>
+    <div class="pz-info">
+      <div class="l1">${bits.length ? bits.join(' · ') : 'Da compilare'}${p.tip ? ' — ' + esc(p.tip) : ''}</div>
+      <div class="l2">${dd.length ? dd.join(' · ') : 'Nessuna distanza inserita'}${p.seq ? ' · seq ' + esc(p.seq) : ''}</div>
+    </div>
+    ${(typeof pzChkFor === 'function' && p.gr && !(PZCFG[g?.id]||{}).linea) ? (() => {
+      const items = pzChkFor(p); const done = items.filter(([id]) => (p.chk||{})[id]).length;
+      return `<span class="pz-chkcnt ${done === items.length ? 'full' : ''}">${done}/${items.length}</span>`;
+    })() : ''}
+    <span class="pz-st ${v.st === 'empty' || v.st === 'ok' && !p.gr ? '' : v.st}"></span>`;
+}
+
+function renderPzTop(){
+  const g = pzGara();
+  const top = $('#pzTop');
+  if (!g){
+    top.innerHTML = '<h2>Tabella logistica</h2><p class="muted">Seleziona prima il <b>tipo di gara</b> nella scheda Checklist: le piazzole verranno generate e verificate secondo il regolamento di quella gara.</p>';
+    $('#pzSummary').style.display = 'none'; $('#pzList').innerHTML = ''; return false;
+  }
+  const cfg = PZCFG[g.id] || {};
+  const lbl = cfg.linea ? 'corsie' : 'piazzole';
+  top.innerHTML = `<h2>Tabella logistica — ${g.n} ${esc(g.s)}</h2>
+    <p class="muted">${cfg.comp ? esc(cfg.comp) + '. ' : ''}${cfg.tempo ? esc(cfg.tempo) + '.' : ''}</p>
+    <label class="f">Formato</label>
+    <div class="seg" id="pzModeSeg">
+      <button data-m="20" class="${S.pzMode === '20' ? 'on' : ''}">20 ${lbl}</button>
+      <button data-m="10" class="${S.pzMode === '10' ? 'on' : ''}">10+10</button>
+    </div>
+    <div class="toolbar">
+      <button class="btn small" id="pzImp">Importa xlsx ASD</button>
+      <button class="btn sec small" id="pzExp">Esporta xlsx</button>
+      <button class="btn ghost small" id="pzClear">Svuota tutte le ${lbl}</button>
+    </div>`;
+  top.querySelectorAll('#pzModeSeg button').forEach(b => b.onclick = () => {
+    S.pzMode = b.dataset.m; save(); renderPz();
+  });
+  $('#pzImp').onclick = () => $('#pzFile').click();
+  $('#pzExp').onclick = () => exportPzXlsx();
+  $('#pzClear').onclick = () => {
+    if (!confirm('Svuotare i dati di tutte le piazzole/corsie?')) return;
+    S.pz = []; ensurePz(); save(); renderPz();
+  };
+  return true;
+}
+
+function renderPzSummary(){
+  const g = pzGara(); const cfg = PZCFG[g.id] || {};
+  const n = pzCount(); const rows = S.pz.slice(0, n);
+  const cnt = [0,0,0,0]; let aree = 0, mobs = 0, tempi = 0, ko = 0, tol = 0, fatte = 0;
+  rows.forEach(p => {
+    if (p.gr){ cnt[parseInt(p.gr) - 1]++; fatte++; }
+    if (p.areaTec || p.areaTrad) aree++;
+    if (p.mob) mobs++; if (p.tempo) tempi++;
+    const v = pzValidate(p);
+    if (v.st === 'ko') ko++; else if (v.st === 'tol') tol++;
+  });
+  const exp = S.pzMode === '10' ? cfg.gr10 : cfg.gr20;
+  const box = $('#pzSummary'); box.style.display = 'block';
+  let h = `<h2>Riepilogo composizione</h2>`;
+  h += [0,1,2,3].map(i => {
+    if (cfg.nog4 && i === 3) return '';
+    const e = exp ? exp[i] : null;
+    const bad = e !== null && fatte >= n && cnt[i] !== e;
+    return `<div class="sum-row"><span>Gruppo ${i + 1}${e !== null ? ` <span class="muted">(attese ${e})</span>` : ''}</span>
+      <span class="val ${bad ? 'bad' : (e !== null && cnt[i] === e && cnt[i] > 0 ? 'good' : '')}">${cnt[i]}${e !== null ? ' / ' + e : ''}</span></div>`;
+  }).join('');
+  if (cfg.gr10note && S.pzMode === '10') h += `<p class="muted" style="margin:4px 0 0">${esc(cfg.gr10note)}</p>`;
+  if (!cfg.linea){
+    const minA = cfg.aree ? cfg.aree[S.pzMode === '10' ? 1 : 0] : null;
+    if (minA !== null) h += `<div class="sum-row"><span>Piazzole con area di tiro <span class="muted">(min ${minA})</span></span>
+      <span class="val ${aree >= minA ? 'good' : (fatte >= n ? 'bad' : '')}">${aree} / ${minA}</span></div>`;
+    if (cfg.mob20 && S.pzMode === '20'){
+      const expM = Object.values(cfg.mob20).reduce((a, b) => a + b, 0);
+      h += `<div class="sum-row"><span>Sagome mobili <span class="muted">(attese ${expM}: ${Object.entries(cfg.mob20).map(([k, v]) => v + '×G' + k).join(' + ')})</span></span>
+        <span class="val ${mobs === expM ? 'good' : (fatte >= n ? 'bad' : '')}">${mobs} / ${expM}</span></div>`;
+    }
+    if (cfg.mob10 && S.pzMode === '10')
+      h += `<div class="sum-row"><span>Sagome mobili <span class="muted">(${esc(cfg.mob10)})</span></span><span class="val ${mobs > 1 ? 'bad' : ''}">${mobs} / 1</span></div>`;
+    if (cfg.tempo)
+      h += `<div class="sum-row"><span>Piazzole a tempo limitato <span class="muted">(una per gruppo)</span></span>
+        <span class="val ${tempi === 4 ? 'good' : ''}">${tempi} / 4</span></div>`;
+  }
+  if (!cfg.linea && typeof pzChkFor === 'function'){
+    let vt = 0, vd = 0, vk = 0;
+    rows.forEach(p => { if (!p.gr) return; pzChkFor(p).forEach(([id]) => { vt++; const s = (p.chk||{})[id]; if (s) vd++; if (s === 'KO') vk++; }); });
+    if (vt) h += `<div class="sum-row"><span>Verifiche ricognizione (13–29)</span>
+      <span class="val ${vk ? 'bad' : (vd === vt ? 'good' : '')}">${vd} / ${vt}${vk ? ' · ' + vk + ' KO' : ''}</span></div>`;
+  }
+  h += `<div class="sum-row"><span>Compilate</span><span class="val">${fatte} / ${n}</span></div>`;
+  if (ko) h += `<div class="ko-flag" style="margin-top:8px">✗ ${ko} piazzola/e NON conformi — righe con pallino rosso.</div>`;
+  else if (tol) h += `<div class="pz-al tol" style="margin-top:8px">⚠ ${tol} piazzola/e in tolleranza 5% — ammesso solo per terreno/sicurezza.</div>`;
+  box.innerHTML = h;
+}
+
+function pzBody(p, i){
+  const g = pzGara(); const cfg = PZCFG[g.id] || {};
+  const v = pzValidate(p);
+  let dist;
+  if (cfg.linea){
+    dist = g.dist.lineamaxT
+      ? `<div class="row2">
+          <div><label class="f"><span class="pk b"><i></i>Linea bianca (m)</span></label><input type="number" step="0.5" inputmode="decimal" data-f="b" value="${esc(p.b)}"></div>
+          <div><label class="f"><span class="pk g"><i></i>Linea gialla (m)</span></label><input type="number" step="0.5" inputmode="decimal" data-f="g" value="${esc(p.g)}"></div>
+        </div>`
+      : `<div><label class="f">Distanza bersaglio (m)</label><input type="number" step="0.5" inputmode="decimal" data-f="d" value="${esc(p.d)}"></div>`;
+  } else if (p.mob){
+    dist = `<div><label class="f">Distanza sagoma mobile (m) — tutte le categorie</label><input type="number" step="0.5" inputmode="decimal" data-f="d" value="${esc(p.d)}"></div>`;
+  } else {
+    const nsagN = parseInt(p.nsag) || 0;
+    p.sag = p.sag || [];
+    let extra = '';
+    if (nsagN >= 2){
+      for (let k = 0; k < nsagN - 1; k++){
+        const s = p.sag[k] || {gr:'', b:'', g:''};
+        extra += `<div class="sag-row"><span class="sag-lbl">Sag. ${k + 2}</span>
+          <select data-sf="${k}.gr"><option value="">G—</option>${[1,2,3,4].map(x =>
+            `<option value="${x}" ${s.gr == x ? 'selected' : ''}>G${x}</option>`).join('')}</select>
+          <input type="number" step="0.5" inputmode="decimal" data-sf="${k}.b" value="${esc(s.b || '')}" placeholder="B m">
+          <input type="number" step="0.5" inputmode="decimal" data-sf="${k}.g" value="${esc(s.g || '')}" placeholder="G m">
+        </div>`;
+      }
+    }
+    dist = `${nsagN >= 2 ? '<label class="f" style="margin-top:12px">Sagoma 1 — la più distante (determina il gruppo piazzola)</label>' : ''}
+    <div class="row3">
+      <div><label class="f"><span class="pk b"><i></i>B (m)</span></label><input type="number" step="0.5" inputmode="decimal" data-f="b" value="${esc(p.b)}"></div>
+      <div><label class="f"><span class="pk g"><i></i>G (m)</span></label><input type="number" step="0.5" inputmode="decimal" data-f="g" value="${esc(p.g)}"></div>
+      <div><label class="f"><span class="pk r"><i></i>R (m)</span></label><input type="number" step="0.5" inputmode="decimal" data-f="r" value="${esc(p.r)}"></div>
+    </div>` + extra;
+  }
+  const flags = cfg.linea ? '' : `<div class="chkline">
+      <label class="chk"><input type="checkbox" data-f="mob" ${p.mob ? 'checked' : ''}>Sagoma mobile</label>
+      ${cfg.tempo ? `<label class="chk"><input type="checkbox" data-f="tempo" ${p.tempo ? 'checked' : ''}>Tempo limitato</label>` : ''}
+      <label class="chk"><input type="checkbox" data-f="areaTec" ${p.areaTec ? 'checked' : ''}>Area tiro tecno</label>
+      <label class="chk"><input type="checkbox" data-f="areaTrad" ${p.areaTrad ? 'checked' : ''}>Area tiro trad</label>
+    </div>`;
+  return `
+    <div class="row3">
+      <div><label class="f">Gruppo</label><select data-f="gr"><option value="">—</option>${[1,2,3,4].map(x =>
+        (cfg.nog4 && x === 4) ? '' : `<option ${p.gr == x ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+      <div><label class="f">N° sagome</label><select data-f="nsag"><option value="">—</option>${[1,2,3].map(x =>
+        `<option ${p.nsag == x ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+      <div><label class="f">Sequenza</label>${(() => {
+        if (cfg.linea) return `<input type="text" data-f="seq" value="${esc(p.seq)}" placeholder="es. A-C-E">`;
+        const n = parseInt(p.nsag) || 0;
+        const opts = seqOpts(n);
+        const cur = seqNorm(p.seq);
+        const bad = cur && !opts.includes(cur);
+        return `<select data-f="seq"><option value="">—</option>` +
+          (bad ? `<option value="${esc(p.seq)}" selected>${esc(p.seq)} ⚠</option>` : '') +
+          opts.map(o => `<option value="${o}" ${cur === o ? 'selected' : ''}>${o}</option>`).join('') +
+          `</select>`;
+      })()}</div>
+    </div>
+    <div class="row2">
+      <div><label class="f">Tipologia sagome</label><input type="text" data-f="tip" value="${esc(p.tip)}" placeholder="es. cinghiale, lontra"></div>
+      <div><label class="f">Produttore</label><input type="text" data-f="prod" value="${esc(p.prod)}"></div>
+    </div>
+    ${dist}${flags}
+    <label class="f">Note</label><input type="text" data-f="note" value="${esc(p.note)}" placeholder="es. attendere il libero, presidio…">
+    ${typeof pzChkBlock === 'function' ? pzChkBlock(p, i) : ''}
+    <div class="ph-row" data-phref="pz:${i}"><button class="icon-btn ph-add" type="button">📷</button></div>
+    ${pzAlertsHtml(v)}`;
+}
+
+function renderPz(){
+  if (!renderPzTop()) return;
+  ensurePz();
+  renderPzSummary();
+  const list = $('#pzList'); list.innerHTML = '';
+  const n = pzCount();
+  for (let i = 0; i < n; i++){
+    const div = document.createElement('div');
+    div.className = 'pz-item' + (S.pzOpen[i] ? ' open' : '');
+    div.innerHTML = `<div class="pz-hd">${pzHead(S.pz[i], i)}</div><div class="pz-body">${S.pzOpen[i] ? pzBody(S.pz[i], i) : ''}</div>`;
+    div.querySelector('.pz-hd').onclick = () => {
+      S.pzOpen[i] = !S.pzOpen[i]; save();
+      div.classList.toggle('open', S.pzOpen[i]);
+      div.querySelector('.pz-body').innerHTML = S.pzOpen[i] ? pzBody(S.pz[i], i) : '';
+      if (S.pzOpen[i]) bindPz(div, i);
+    };
+    if (S.pzOpen[i]) bindPz(div, i);
+    list.appendChild(div);
+  }
+}
+function bindPz(div, i){
+  div.querySelectorAll('[data-f]').forEach(el => {
+    const f = el.dataset.f;
+    const isChk = el.type === 'checkbox';
+    const isSel = el.tagName === 'SELECT';
+    el[(isChk || isSel) ? 'onchange' : 'oninput'] = () => {
+      S.pz[i][f] = isChk ? el.checked : el.value; save();
+      div.querySelector('.pz-hd').innerHTML = pzHead(S.pz[i], i);
+      if (f === 'mob' || f === 'gr' || f === 'nsag'){
+        div.querySelector('.pz-body').innerHTML = pzBody(S.pz[i], i); bindPz(div, i);
+      } else {
+        const v = pzValidate(S.pz[i]);
+        const old = div.querySelector('.pz-alerts');
+        const nu = pzAlertsHtml(v);
+        if (old) old.outerHTML = nu;
+        else if (nu) div.querySelector('.pz-body').insertAdjacentHTML('beforeend', nu);
+      }
+      renderPzSummary();
+    };
+  });
+  div.querySelectorAll('[data-sf]').forEach(el => {
+    el[el.tagName === 'SELECT' ? 'onchange' : 'oninput'] = () => {
+      const [k, f] = el.dataset.sf.split('.');
+      const p = S.pz[i];
+      p.sag = p.sag || [];
+      p.sag[k] = p.sag[k] || {gr:'', b:'', g:''};
+      p.sag[k][f] = el.value; save();
+      div.querySelector('.pz-hd').innerHTML = pzHead(p, i);
+      const oldAl = div.querySelector('.pz-alerts');
+      const nuAl = pzAlertsHtml(pzValidate(p));
+      if (oldAl) oldAl.outerHTML = nuAl;
+      else if (nuAl) div.querySelector('.pz-body').insertAdjacentHTML('beforeend', nuAl);
+      renderPzSummary();
+    };
+  });
+}
+const _bindPz = bindPz;
+bindPz = function(div, i){
+  _bindPz(div, i);
+  if (typeof bindPhotos === 'function') bindPhotos(div, 'pz:' + i);
+};
+document.querySelector('#nav [data-v="pz"]').addEventListener('click', renderPz);
+$('#gTipo').addEventListener('change', () => renderPz());
+renderPz();
+
+/* Anomalie piazzole nella relazione */
+const _buildRel = buildRel;
+buildRel = function(){
+  let txt = _buildRel();
+  const g = pzGara();
+  if (g){
+    const n = pzCount();
+    const probs = [];
+    S.pz.slice(0, n).forEach((p, i) => {
+      const v = pzValidate(p);
+      v.alerts.filter(a => a.t !== 'ok').forEach(a => probs.push(`  • Piazzola ${i + 1}: ${a.msg}`));
+    });
+    const fatte = S.pz.slice(0, n).filter(p => p.gr).length;
+    let block = `\nTABELLA LOGISTICA (${S.pzMode === '10' ? '10+10' : '20'})\nPiazzole verificate: ${fatte}/${n}\n`;
+    block += probs.length ? 'Anomalie rilevate:\n' + probs.join('\n') : 'Nessuna anomalia sulle distanze e composizione.';
+    txt = txt.replace('\nCRITICITÀ E FATTI RILEVANTI', block + '\n\nCRITICITÀ E FATTI RILEVANTI');
+  }
+  return txt;
+};
+</script>
+<script>
+/* ================== UTENTI E ARCHIVIO GARE ================== */
+let USERS = JSON.parse(localStorage.getItem('gdg-users') || '[]');
+let ARCH  = JSON.parse(localStorage.getItem('gdg-archive') || '[]');
+const saveUsers = () => localStorage.setItem('gdg-users', JSON.stringify(USERS));
+const saveArch  = () => localStorage.setItem('gdg-archive', JSON.stringify(ARCH));
+let uEditId = null;
+
+function curUser(){ return USERS.find(u => u.id === S.userId) || null; }
+
+/* --- header: mostra anche il giudice attivo --- */
+const _updateCtx = updateCtx;
+updateCtx = function(){
+  _updateCtx();
+  const u = curUser();
+  if (u){
+    const base = $('#hdCtx').textContent;
+    $('#hdCtx').textContent = (base.startsWith('Nessuna') ? '' : base + ' · ') + '⚑ ' + u.nome;
+  }
+};
+
+/* --- gestione utenti --- */
+function renderUsers(){
+  const box = $('#userList');
+  if (!USERS.length){ box.innerHTML = '<div class="empty-hint">Nessun giudice salvato: compila i campi qui sotto e salva.</div>'; return; }
+  box.innerHTML = USERS.map(u => `
+    <div class="user-item">
+      <button class="user-pick ${S.userId === u.id ? 'on' : ''}" data-pick="${u.id}" aria-label="Seleziona ${esc(u.nome)}"></button>
+      <div class="ui-info" data-edit="${u.id}">
+        <div class="l1">${esc(u.nome)}${S.userId === u.id ? ' <span class="badge">attivo</span>' : ''}</div>
+        <div class="l2">${[u.tess ? 'tess. ' + u.tess : '', u.tel, u.mail].filter(Boolean).map(esc).join(' · ') || 'tocca per completare i dati'}</div>
+      </div>
+      <button class="icon-btn" data-del="${u.id}" aria-label="Elimina">🗑</button>
+    </div>`).join('');
+  box.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => {
+    S.userId = b.dataset.pick; 
+    const u = curUser();
+    S.gara.gGdg = u.nome; $('#gGdg').value = u.nome;
+    save(); updateCtx(); renderUsers();
+  });
+  box.querySelectorAll('[data-edit]').forEach(el => el.onclick = () => {
+    const u = USERS.find(x => x.id === el.dataset.edit);
+    uEditId = u.id;
+    $('#uNome').value = u.nome; $('#uTess').value = u.tess || '';
+    $('#uTel').value = u.tel || ''; $('#uMail').value = u.mail || '';
+    $('#uSave').textContent = 'Aggiorna giudice'; $('#uCancel').style.display = 'inline-flex';
+  });
+  box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    const u = USERS.find(x => x.id === b.dataset.del);
+    if (!confirm(`Eliminare il giudice "${u.nome}"? Le gare archiviate restano.`)) return;
+    USERS = USERS.filter(x => x.id !== b.dataset.del);
+    if (S.userId === b.dataset.del){ delete S.userId; save(); }
+    saveUsers(); renderUsers(); updateCtx();
+  });
+}
+function uClearForm(){
+  uEditId = null;
+  ['uNome','uTess','uTel','uMail'].forEach(id => $('#'+id).value = '');
+  $('#uSave').textContent = 'Salva giudice'; $('#uCancel').style.display = 'none';
+}
+$('#uSave').onclick = () => {
+  const nome = $('#uNome').value.trim();
+  if (!nome){ alert('Inserisci almeno nome e cognome.'); return; }
+  const data = {nome, tess:$('#uTess').value.trim(), tel:$('#uTel').value.trim(), mail:$('#uMail').value.trim()};
+  if (uEditId){
+    Object.assign(USERS.find(x => x.id === uEditId), data);
+  } else {
+    const u = Object.assign({id:'u' + Date.now()}, data);
+    USERS.push(u);
+    if (!S.userId){ S.userId = u.id; S.gara.gGdg = u.nome; $('#gGdg').value = u.nome; save(); }
+  }
+  saveUsers(); uClearForm(); renderUsers(); updateCtx();
+};
+$('#uCancel').onclick = uClearForm;
+
+/* --- archivio gare --- */
+function archSnapshot(){
+  return {
+    id: S.archId || 'a' + Date.now(),
+    ts: Date.now(),
+    userId: S.userId || null,
+    userNome: curUser() ? curUser().nome : (S.gara.gGdg || ''),
+    gara: JSON.parse(JSON.stringify(S.gara)),
+    check: JSON.parse(JSON.stringify(S.check)),
+    notes: JSON.parse(JSON.stringify(S.notes)),
+    pz: JSON.parse(JSON.stringify(S.pz)),
+    pzMode: S.pzMode,
+    diario: JSON.parse(JSON.stringify(S.diario || [])),
+    sanz: JSON.parse(JSON.stringify(S.sanz || [])),
+    ctrl: JSON.parse(JSON.stringify(S.ctrl || [])),
+    vel: JSON.parse(JSON.stringify(S.vel || null)),
+    classificaTs: S.classificaTs || null,
+    brief: JSON.parse(JSON.stringify(S.brief || [])),
+    iscr: JSON.parse(JSON.stringify(S.iscr || null)),
+    rel: JSON.parse(JSON.stringify(S.rel)),
+    relText: buildRel()
+  };
+}
+function archiveCurrent(silent){
+  const g = pzGara();
+  if (!g && !S.gara.gLoc && !Object.keys(S.check).length){
+    if (!silent) alert('Non c\u2019\u00e8 una gara in corso da archiviare.');
+    return false;
+  }
+  const snap = archSnapshot();
+  const i = ARCH.findIndex(a => a.id === snap.id);
+  if (i >= 0) ARCH[i] = snap; else ARCH.unshift(snap);
+  S.archId = snap.id; save(); saveArch(); renderArch();
+  return true;
+}
+function archLabel(a){
+  const g = GARE.find(x => x.id === a.gara.gTipo);
+  return (g ? g.n + ' ' + g.s : 'Gara') + (a.gara.gLoc ? ' — ' + a.gara.gLoc : '');
+}
+function renderArch(){
+  const box = $('#archList');
+  if (!ARCH.length){ box.innerHTML = '<div class="empty-hint">Nessuna gara archiviata.</div>'; return; }
+  box.innerHTML = ARCH.map(a => {
+    const all = CHECK.flatMap(f => f.items);
+    const done = all.filter(([id]) => a.check[id]).length;
+    const kos = all.filter(([id]) => a.check[id] === 'KO').length;
+    const dt = a.gara.gData ? a.gara.gData.split('-').reverse().join('/') : new Date(a.ts).toLocaleDateString('it-IT');
+    const g = GARE.find(x => x.id === a.gara.gTipo);
+    return `<div class="arch-item">
+      <span class="arch-badge">${g ? g.n : '—'}</span>
+      <div class="ui-info" data-open="${a.id}">
+        <div class="l1">${esc(archLabel(a))}${S.archId === a.id ? ' <span class="badge">in corso</span>' : ''}</div>
+        <div class="l2">${dt}${a.userNome ? ' · ' + esc(a.userNome) : ''} · checklist ${done}/${all.length}${kos ? ' · <b style="color:var(--rosso)">' + kos + ' KO</b>' : ''}</div>
+      </div>
+      <button class="icon-btn" data-exp="${a.id}" aria-label="Esporta">⤓</button>
+      <button class="icon-btn" data-adel="${a.id}" aria-label="Elimina">🗑</button>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('[data-open]').forEach(el => el.onclick = () => {
+    const a = ARCH.find(x => x.id === el.dataset.open);
+    if (!confirm(`Riaprire "${archLabel(a)}"?\nLa gara attualmente in corso verr\u00e0 prima archiviata.`)) return;
+    if (S.archId !== a.id) archiveCurrent(true);
+    const fresh = archSnapshotToState(a);
+    localStorage.setItem('gdg-state', JSON.stringify(fresh));
+    location.reload();
+  });
+  box.querySelectorAll('[data-exp]').forEach(b => b.onclick = () => {
+    const a = ARCH.find(x => x.id === b.dataset.exp);
+    downloadJson([a], 'gara-' + (a.gara.gData || a.id) + '.json');
+  });
+  box.querySelectorAll('[data-adel]').forEach(b => b.onclick = () => {
+    const a = ARCH.find(x => x.id === b.dataset.adel);
+    if (!confirm(`Eliminare definitivamente "${archLabel(a)}" dall\u0027archivio?`)) return;
+    ARCH = ARCH.filter(x => x.id !== b.dataset.adel);
+    if (S.archId === a.id){ delete S.archId; save(); }
+    saveArch(); renderArch();
+  });
+}
+function archSnapshotToState(a){
+  return {
+    gara: a.gara, check: a.check, notes: a.notes, rel: a.rel,
+    pz: a.pz, pzMode: a.pzMode, faseOpen: {}, pzOpen: {},
+    diario: a.diario || [], sanz: a.sanz || [], ctrl: a.ctrl || [], classificaTs: a.classificaTs || null, brief: a.brief || [], iscr: a.iscr || null, iscrSel: 0, vel: a.vel || null, emTel: S.emTel,
+    userId: a.userId || S.userId, archId: a.id
+  };
+}
+function downloadJson(data, name){
+  const blob = new Blob([JSON.stringify({app:'gdg-csain', v:1, users:USERS, gare:data}, null, 1)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const el = document.createElement('a');
+  el.href = url; el.download = name; el.click();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
+$('#aSaveCur').onclick = () => { if (archiveCurrent()) alert('Gara archiviata \u2713'); };
+$('#rArch') && ($('#rArch').onclick = () => { if (archiveCurrent()) alert('Gara archiviata \u2713'); });
+$('#aExpAll').onclick = () => downloadJson(ARCH, 'archivio-gdg-csain.json');
+$('#aImp').onclick = () => $('#aImpFile').click();
+$('#aImpFile').onchange = () => {
+  const f = $('#aImpFile').files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try{
+      const data = JSON.parse(rd.result);
+      if (data.app !== 'gdg-csain') throw 0;
+      let nu = 0, ng = 0;
+      (data.users || []).forEach(u => { if (!USERS.some(x => x.id === u.id)){ USERS.push(u); nu++; } });
+      (data.gare || []).forEach(a => {
+        const i = ARCH.findIndex(x => x.id === a.id);
+        if (i >= 0) ARCH[i] = a; else { ARCH.push(a); ng++; }
+      });
+      ARCH.sort((a, b) => b.ts - a.ts);
+      saveUsers(); saveArch(); renderUsers(); renderArch();
+      alert(`Import completato: ${ng} gare nuove, ${nu} giudici nuovi.`);
+    }catch(e){ alert('File non valido: esporta il JSON da questa app.'); }
+    $('#aImpFile').value = '';
+  };
+  rd.readAsText(f);
+};
+
+/* --- Nuova gara: proponi archiviazione prima dell'azzeramento --- */
+$('#btnReset').onclick = () => {
+  const busy = Object.keys(S.check).length || S.gara.gLoc || S.pz.some(p => p.gr);
+  if (busy){
+    if (confirm('Vuoi archiviare la gara in corso prima di iniziarne una nuova?')){
+      archiveCurrent(true);
+    } else if (!confirm('Azzerare senza archiviare? I dati della gara in corso andranno persi.')){
+      return;
+    }
+  }
+  const keepUser = S.userId;
+  S.gara = {}; S.check = {}; S.notes = {}; S.rel = {}; S.pz = []; S.pzOpen = {}; delete S.archId;
+  S.diario = []; S.sanz = []; S.ctrl = []; S.brief = []; S.iscr = null; S.iscrSel = 0; S.vel = null; delete S.classificaTs;
+  S.userId = keepUser;
+  const u = curUser(); if (u) S.gara.gGdg = u.nome;
+  save();
+  garaFields.forEach(id => $('#'+id).value = S.gara[id] || '');
+  ['rPart','rIni','rFine','rMat','rAnn','rSanz','rCrit','rPrem','rNote'].forEach(id => $('#'+id).value = '');
+  $('#rOutCard').style.display = 'none';
+  ensurePz(); renderCheck(); renderPz(); renderArch(); updateCtx();
+  if (typeof renderLog === 'function') renderLog();
+};
+
+renderUsers(); renderArch(); updateCtx();
+</script>
+<script>
+/* ================== IMPORT/EXPORT TABELLA LOGISTICA (XLSX) ================== */
+const SHEETMAP = [
+  [/indoor|indor/i, 'rt25i'],
+  [/free/i, 'fs40'],
+  [/fusion/i, 'f44'],
+  [/track/i, 't60'],
+  [/target/i, 'tg60'],
+  [/40\s*round/i, 'r40'],
+  [/round/i, 'r40']
+];
+function sheetToGara(name){
+  for (const [re, id] of SHEETMAP) if (re.test(name)) return id;
+  return null;
+}
+const normH = h => String(h == null ? '' : h).toLowerCase().replace(/\s+/g, '');
+const truthy = v => {
+  const s = String(v == null ? '' : v).trim().toLowerCase();
+  return s !== '' && s !== '0' && s !== 'no' && s !== '-' && s !== 'n';
+};
+const numOr = v => {
+  if (v == null || v === '') return '';
+  const n = parseFloat(String(v).replace(',', '.'));
+  return isNaN(n) ? '' : String(n);
+};
+
+/* Individua riga intestazione e mappa colonne → campi app. aoa = array di array. */
+function mapLogistica(aoa, sheetName){
+  let hr = -1;
+  for (let r = 0; r < Math.min(aoa.length, 15); r++){
+    const H = (aoa[r] || []).map(normH);
+    if (H[0] === 'pz' && H.includes('gr')){ hr = r; break; }
+  }
+  if (hr < 0) return null;
+  const H = (aoa[hr] || []).map(normH);
+  const isFree = /free/i.test(sheetName);
+  const col = {tip:[], tempoMobile:-1, mob:-1, tempo:-1, b:-1, g:-1, r:-1, areaTec:-1, areaTrad:-1,
+               pz:-1, gr:-1, nsag:-1, prod:-1, seq:-1, note:-1};
+  H.forEach((h, c) => {
+    if (h === 'pz') col.pz = c;
+    else if (h === 'gr') col.gr = c;
+    else if (h.includes('sag') && !h.includes('tipolog')) col.nsag = c;
+    else if (h.includes('tipolog')) col.tip.push(c);
+    else if (h.includes('produtt')) col.prod = c;
+    else if (h.includes('tempo') && h.includes('mobile')) col.tempoMobile = c;
+    else if (h.includes('mobile')) col.mob = c;
+    else if (h.includes('tempo')) col.tempo = c;
+    else if (h.startsWith('b') && h.includes('metri')) col.b = c;
+    else if (h.startsWith('g') && h.includes('metri')) col.g = c;
+    else if (h.startsWith('r') && h.includes('metri')) col.r = c;
+    else if (h.includes('tecno')) { if (isFree) col.b = c; else col.areaTec = c; }
+    else if (h.includes('trad'))  { if (isFree) col.g = c; else col.areaTrad = c; }
+    else if (h.includes('sequen') || h.includes('disposiz')) col.seq = c;
+    else if (h.includes('note')) col.note = c;
+  });
+  /* colonna tipologia doppia (indoor: ROUND/TROPHY con sotto-intestazioni) */
+  if (col.tip.length === 1 && H[col.tip[0] + 1] === '' &&
+      normH((aoa[hr + 1] || [])[col.tip[0] + 1]).includes('trophy')) col.tip.push(col.tip[0] + 1);
+  const startR = (col.tip.length > 1 && normH((aoa[hr + 1] || [])[col.tip[0]]).includes('round')) ? hr + 2 : hr + 1;
+
+  const out = [];
+  for (let r = startR; r < aoa.length && out.length < 20; r++){
+    const row = aoa[r] || [];
+    const pzN = parseInt(row[col.pz]);
+    if (isNaN(pzN) || pzN < 1 || pzN > 20) continue;
+    const p = PZBLANK();
+    const grV = parseInt(row[col.gr]);
+    if (!isNaN(grV) && grV >= 1 && grV <= 4) p.gr = String(grV);
+    const ns = parseInt(row[col.nsag]);
+    if (!isNaN(ns) && ns >= 1 && ns <= 3) p.nsag = String(ns);
+    p.tip = col.tip.map(c => row[c]).filter(v => v != null && String(v).trim() !== '')
+             .map(v => String(v).trim()).join(' / ');
+    if (col.prod >= 0 && row[col.prod] != null) p.prod = String(row[col.prod]).trim();
+    if (col.b >= 0) p.b = numOr(row[col.b]);
+    if (col.g >= 0) p.g = numOr(row[col.g]);
+    if (col.r >= 0) p.r = numOr(row[col.r]);
+    if (col.areaTec >= 0) p.areaTec = truthy(row[col.areaTec]);
+    if (col.areaTrad >= 0) p.areaTrad = truthy(row[col.areaTrad]);
+    if (isFree && (p.b || p.g)){ p.areaTec = p.areaTec || !!p.b; p.areaTrad = p.areaTrad || !!p.g; }
+    if (col.mob >= 0 && truthy(row[col.mob])) p.mob = true;
+    if (col.tempo >= 0 && truthy(row[col.tempo])) p.tempo = true;
+    if (col.tempoMobile >= 0 && row[col.tempoMobile] != null){
+      const s = String(row[col.tempoMobile]).trim().toLowerCase();
+      if (s.includes('mob') || s === 'm') p.mob = true;
+      else if (s.includes('temp') || s === 't') p.tempo = true;
+      else if (truthy(s)) p.note = ('Tempo/Mobile: ' + row[col.tempoMobile] + '. ');
+    }
+    if (p.mob){ p.d = p.d || p.g || p.b; }
+    if (col.seq >= 0 && row[col.seq] != null) p.seq = String(row[col.seq]).trim();
+    if (col.note >= 0 && row[col.note] != null) p.note += String(row[col.note]).trim();
+    out[pzN - 1] = p;
+  }
+  for (let i = 0; i < out.length; i++) if (!out[i]) out[i] = PZBLANK();
+  return out.length ? out : null;
+}
+const pzHasData = p => !!(p.gr || p.tip || p.nsag || p.b || p.g || p.r || p.d || p.prod || p.seq || p.mob || p.tempo);
+
+/* --- caricamento lazy di SheetJS (cacheato dal service worker) --- */
+let _xlsxLoading = null;
+function loadXLSX(){
+  if (window.XLSX) return Promise.resolve();
+  if (_xlsxLoading) return _xlsxLoading;
+  _xlsxLoading = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = res;
+    s.onerror = () => { _xlsxLoading = null; rej(new Error('offline')); };
+    document.head.appendChild(s);
+  });
+  return _xlsxLoading;
+}
+
+$('#pzFile').onchange = async () => {
+  const f = $('#pzFile').files[0]; if (!f) return;
+  try{ await loadXLSX(); }
+  catch(e){ alert('Per il primo import serve una connessione (scarico la libreria xlsx); poi resta disponibile offline.'); $('#pzFile').value = ''; return; }
+  const buf = await f.arrayBuffer();
+  let wb;
+  try{ wb = XLSX.read(buf, {type:'array'}); }
+  catch(e){ alert('File non leggibile come xlsx.'); $('#pzFile').value = ''; return; }
+  const cands = [];
+  wb.SheetNames.forEach(name => {
+    if (/note/i.test(name)) return;
+    const aoa = XLSX.utils.sheet_to_json(wb.Sheets[name], {header:1, raw:true, defval:null});
+    const pz = mapLogistica(aoa, name);
+    if (pz) cands.push({name, pz});
+  });
+  $('#pzFile').value = '';
+  if (!cands.length){ alert('Nessun foglio con la struttura della tabella logistica (riga PZ/GR) trovato.'); return; }
+  const curId = S.gara.gTipo;
+  const match = cands.find(c => sheetToGara(c.name) === curId);
+  if (cands.length === 1) applyImport(cands[0]);
+  else if (match && confirm(`Trovati ${cands.length} fogli. Importo "${match.name}" che corrisponde alla gara selezionata?`)) applyImport(match);
+  else showChooser(cands);
+};
+function showChooser(cands){
+  const box = $('#pzChooser');
+  box.style.display = 'block';
+  box.innerHTML = '<h2>Quale foglio importare?</h2>' + cands.map((c, i) => {
+    const filled = c.pz.filter(pzHasData).length;
+    return `<div class="toolbar" style="margin-top:6px"><button class="btn ghost" data-ch="${i}" style="flex:1;justify-content:space-between">${esc(c.name)}<span class="muted">${filled} pz compilate</span></button></div>`;
+  }).join('') + '<div class="toolbar"><button class="btn ghost small" id="chX">Annulla</button></div>';
+  box.querySelectorAll('[data-ch]').forEach(b => b.onclick = () => { applyImport(cands[+b.dataset.ch]); });
+  $('#chX').onclick = () => { box.style.display = 'none'; };
+  box.scrollIntoView({behavior:'smooth'});
+}
+function applyImport(c){
+  $('#pzChooser').style.display = 'none';
+  const gid = sheetToGara(c.name);
+  if (gid && gid !== S.gara.gTipo){
+    const g = GARE.find(x => x.id === gid);
+    if (confirm(`Il foglio "${c.name}" corrisponde alla gara ${g.n} ${g.s}: imposto questo tipo di gara?`)){
+      S.gara.gTipo = gid; $('#gTipo').value = gid;
+    }
+  }
+  const filled = c.pz.filter(pzHasData).length;
+  if (filled === 0 && !confirm(`Il foglio "${c.name}" sembra un modulo vuoto (nessuna piazzola compilata). Importarlo comunque?`)) return;
+  if (S.pz.some(p => p.gr) && !confirm(`Sovrascrivere le piazzole attuali con le ${filled} importate da "${c.name}"?`)) return;
+  S.pz = c.pz; ensurePz();
+  S.pzMode = filled > 10 ? '20' : S.pzMode;
+  S.pzOpen = {}; save(); updateCtx(); renderPz();
+  alert(`Importate ${filled} piazzole da "${c.name}" \u2713\nControlla i pallini di stato per la verifica distanze.`);
+}
+
+/* --- export xlsx nel formato del modulo ASD --- */
+async function exportPzXlsx(){
+  const g = pzGara();
+  if (!g){ alert('Seleziona prima il tipo di gara.'); return; }
+  try{ await loadXLSX(); }
+  catch(e){ alert('Per il primo export serve una connessione (scarico la libreria xlsx); poi resta disponibile offline.'); return; }
+  const n = pzCount();
+  const cfg = PZCFG[g.id] || {};
+  const dt = S.gara.gData ? S.gara.gData.split('-').reverse().join('/') : '';
+  const aoa = [];
+  aoa.push([`MODULO GARA del: ${dt}`, null, null, null, null, null, null, null, null, null, `${g.n} ${g.s}`]);
+  aoa.push([`${S.gara.gAsd || ''} ${S.gara.gLoc ? '- ' + S.gara.gLoc : ''}`.trim() || null]);
+  if (cfg.comp) aoa.push([cfg.comp]);
+  aoa.push([]);
+  aoa.push(['PZ','GR','N° SAG','TIPOLOGIA SAGOME','Produttore','Tempo/Mobile','B metri','G metri','R metri','Area tecno','Area trad','Disposizione/Sequenza','NOTE']);
+  for (let i = 0; i < n; i++){
+    const p = S.pz[i] || PZBLANK();
+    aoa.push([i + 1,
+      p.gr ? +p.gr : null, p.nsag ? +p.nsag : null, p.tip || null, p.prod || null,
+      p.mob ? 'MOBILE' : (p.tempo ? 'TEMPO' : null),
+      p.mob ? (p.d ? +p.d : null) : (p.b ? +p.b : null),
+      p.g ? +p.g : null, p.r ? +p.r : null,
+      p.areaTec ? 'X' : null, p.areaTrad ? 'X' : null,
+      p.seq || null,
+      [p.note || '', ...(p.sag || []).filter(s => s && s.gr).map((s, k) =>
+        `Sag${k + 2} G${s.gr}${s.b ? ' B' + s.b : ''}${s.g ? ' G' + s.g : ''}`)].filter(Boolean).join(' · ') || null]);
+  }
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{wch:4},{wch:4},{wch:7},{wch:26},{wch:12},{wch:12},{wch:8},{wch:8},{wch:8},{wch:9},{wch:9},{wch:20},{wch:28}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, `${g.n} ${g.s}`.slice(0, 31));
+  XLSX.writeFile(wb, `tabella-logistica-${g.n}-${(S.gara.gData || 'gara')}.xlsx`);
+}
+</script>
+<script>
+/* ================== REGISTRO: DIARIO, SANZIONI, CONTROLLI, EMERGENZE ================== */
+S.diario = S.diario || []; S.sanz = S.sanz || []; S.ctrl = S.ctrl || [];
+const hhmm = ts => new Date(ts).toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'});
+
+/* --- foto (IndexedDB) --- */
+let _phdb = null;
+function phDB(){
+  if (_phdb) return Promise.resolve(_phdb);
+  return new Promise((res, rej) => {
+    const q = indexedDB.open('gdg-photos', 1);
+    q.onupgradeneeded = e => e.target.result.createObjectStore('ph', {keyPath:'id'});
+    q.onsuccess = e => { _phdb = e.target.result; res(_phdb); };
+    q.onerror = () => rej(new Error('idb'));
+  });
+}
+function downscale(file){
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 1280 / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      cv.toBlob(b => res(b || file), 'image/jpeg', .8);
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => res(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+async function phAdd(ref, file){
+  const blob = await downscale(file);
+  const db = await phDB();
+  const rec = {id:'p' + Date.now() + Math.random().toString(36).slice(2, 6), ref, ts:Date.now(), blob};
+  await new Promise((res, rej) => {
+    const t = db.transaction('ph', 'readwrite');
+    t.objectStore('ph').put(rec); t.oncomplete = res; t.onerror = rej;
+  });
+  return rec.id;
+}
+async function phList(ref){
+  const db = await phDB();
+  return new Promise(res => {
+    const out = [];
+    db.transaction('ph').objectStore('ph').openCursor().onsuccess = e => {
+      const c = e.target.result;
+      if (c){ if (c.value.ref === ref) out.push(c.value); c.continue(); } else res(out);
+    };
+  });
+}
+async function phDel(id){
+  const db = await phDB();
+  return new Promise(res => {
+    const t = db.transaction('ph', 'readwrite');
+    t.objectStore('ph').delete(id); t.oncomplete = res;
+  });
+}
+async function renderThumbs(row){
+  const ref = row.dataset.phref;
+  row.querySelectorAll('.ph-thumb').forEach(x => x.remove());
+  let list = [];
+  try{ list = await phList(ref); }catch(e){ return; }
+  list.forEach(rec => {
+    const url = URL.createObjectURL(rec.blob);
+    const d = document.createElement('div');
+    d.className = 'ph-thumb';
+    d.innerHTML = `<img src="${url}" alt="foto"><button class="ph-x" aria-label="Elimina foto">✕</button>`;
+    d.querySelector('img').onclick = () => window.open(url, '_blank');
+    d.querySelector('.ph-x').onclick = async ev => {
+      ev.stopPropagation();
+      if (!confirm('Eliminare questa foto?')) return;
+      await phDel(rec.id); renderThumbs(row);
+    };
+    row.appendChild(d);
+  });
+}
+function bindPhotos(scope, refFilter){
+  scope.querySelectorAll('.ph-row').forEach(row => {
+    if (refFilter && row.dataset.phref !== refFilter) return;
+    renderThumbs(row);
+    const btn = row.querySelector('.ph-add');
+    if (!btn || btn._bound) return;
+    btn._bound = true;
+    btn.onclick = () => {
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment';
+      inp.onchange = async () => {
+        if (!inp.files[0]) return;
+        try{ await phAdd(row.dataset.phref, inp.files[0]); renderThumbs(row); }
+        catch(e){ alert('Impossibile salvare la foto su questo dispositivo.'); }
+      };
+      inp.click();
+    };
+  });
+}
+
+/* --- diario --- */
+function addDiario(txt){
+  if (!txt.trim()) return;
+  S.diario.push({id:'d' + Date.now(), ts:Date.now(), txt:txt.trim()});
+  save(); renderLog();
+}
+function renderDiario(){
+  const box = $('#dList');
+  if (!S.diario.length){ box.innerHTML = '<div class="empty-hint">Nessuna annotazione.</div>'; return; }
+  box.innerHTML = S.diario.map(d => `
+    <div class="log-item">
+      <span class="log-ts">${hhmm(d.ts)}</span>
+      <div class="log-txt">${esc(d.txt)}
+        <div class="ph-row" data-phref="dia:${d.id}"><button class="icon-btn ph-add" type="button">📷</button></div>
+      </div>
+      <button class="icon-btn" data-ddel="${d.id}" aria-label="Elimina">🗑</button>
+    </div>`).join('');
+  box.querySelectorAll('[data-ddel]').forEach(b => b.onclick = () => {
+    if (!confirm('Eliminare questa annotazione? (le foto allegate restano in memoria)')) return;
+    S.diario = S.diario.filter(x => x.id !== b.dataset.ddel); save(); renderLog();
+  });
+  bindPhotos(box);
+}
+$('#dAdd').onclick = () => { addDiario($('#dTxt').value); $('#dTxt').value = ''; };
+$('#dTxt').addEventListener('keydown', e => { if (e.key === 'Enter'){ addDiario($('#dTxt').value); $('#dTxt').value = ''; } });
+$$('#v-log [data-q]').forEach(b => b.onclick = () => addDiario(b.dataset.q));
+
+/* --- sanzioni --- */
+$('#sAdd').onclick = () => {
+  const arc = $('#sArc').value.trim();
+  if (!arc){ alert('Indica l\u2019arciere.'); return; }
+  S.sanz.push({id:'s' + Date.now(), ts:Date.now(), arc, pz:$('#sPz').value.trim(),
+    tipo:$('#sTipo').value, mot:$('#sMot').value.trim()});
+  ['sArc','sPz','sMot'].forEach(id => $('#'+id).value = '');
+  save(); renderLog();
+};
+function renderSanz(){
+  const box = $('#sList');
+  if (!S.sanz.length){ box.innerHTML = '<div class="empty-hint">Nessuna sanzione registrata.</div>'; return; }
+  box.innerHTML = S.sanz.map(s => `
+    <div class="log-item">
+      <span class="log-ts">${hhmm(s.ts)}</span>
+      <div class="log-txt"><span class="sanz-tipo ${s.tipo}">${s.tipo}</span> — ${esc(s.arc)}${s.pz ? ' · pz ' + esc(s.pz) : ''}${s.mot ? '<br><span class="muted">' + esc(s.mot) + '</span>' : ''}</div>
+      <button class="icon-btn" data-sdel="${s.id}" aria-label="Elimina">🗑</button>
+    </div>`).join('');
+  box.querySelectorAll('[data-sdel]').forEach(b => b.onclick = () => {
+    if (!confirm('Eliminare questa sanzione dal registro?')) return;
+    S.sanz = S.sanz.filter(x => x.id !== b.dataset.sdel); save(); renderLog();
+  });
+}
+
+/* --- ricorsi: finestra 30 minuti --- */
+$('#clPub').onclick = () => {
+  if (S.classificaTs && !confirm('Orario di pubblicazione gi\u00e0 registrato alle ' + hhmm(S.classificaTs) + '. Sovrascrivere?')) return;
+  S.classificaTs = Date.now(); save(); renderRicorsi();
+  addDiario('Classifica pubblicata \u2014 termine ricorsi ore ' + hhmm(S.classificaTs + 30 * 60000));
+};
+$('#clDel').onclick = () => { delete S.classificaTs; save(); renderRicorsi(); };
+function renderRicorsi(){
+  const r = $('#clRes');
+  if (!S.classificaTs){ r.className = 'res'; $('#clDel').style.display = 'none'; return; }
+  $('#clDel').style.display = 'inline-flex';
+  const end = S.classificaTs + 30 * 60000;
+  const left = end - Date.now();
+  if (left > 0){
+    const m = Math.floor(left / 60000), s = Math.floor(left % 60000 / 1000);
+    r.className = 'res show neutral';
+    r.innerHTML = `<span class="big">${m}:${String(s).padStart(2,'0')}</span>Classifica pubblicata alle <b>${hhmm(S.classificaTs)}</b> — ricorsi ammissibili fino alle <b>${hhmm(end)}</b> (e comunque prima delle premiazioni).`;
+  } else {
+    r.className = 'res show good';
+    r.innerHTML = `<span class="big">FINESTRA CHIUSA</span>Classifica pubblicata alle ${hhmm(S.classificaTs)}; il termine dei 30 minuti \u00e8 scaduto alle ${hhmm(end)}.`;
+  }
+}
+setInterval(() => { if ($('#v-log').classList.contains('on')) renderRicorsi(); }, 1000);
+
+/* --- controllo velocità compound --- */
+S.vel = S.vel || null;
+const VELCATS = ['CO', 'SL', 'SI', 'FS'];
+const VELMAX = 300;
+
+/* parser "Elenco Iscritti" (righe per sodalizio: CSain · N° · Pass · Nome · CF · Cat · Stato) */
+function velParseElenco(pages){
+  const seen = {};
+  const out = [];
+  let comp = '';
+  pages.forEach(lines => lines.forEach(L => {
+    const t = L.t;
+    let m = t.match(/^Sodalizio\s*:\s*\d*\s*(.+)$/i);
+    if (m){ comp = m[1].trim(); return; }
+    m = t.match(/^(\d{6,})\s+(?:(\d+)\s+)?(\d+)\s+(.+?)\s{2,}([A-Za-z0-9]{16})\s+([A-Z]{2})\s+(Iscritt[oa]|Prenotat[oa])$/);
+    if (!m) return;
+    const key = m[1] + ':' + m[3];
+    if (seen[key]) return;
+    seen[key] = 1;
+    out.push({nome: m[4].trim(), comp, cat: m[6], stato: m[7]});
+  }));
+  return out;
+}
+function velEsito(v){
+  if (v.fps === '' || v.fps == null || isNaN(parseFloat(v.fps))) return null;
+  return parseFloat(v.fps) > VELMAX ? 'ko' : 'ok';
+}
+$('#velImp').onclick = () => $('#velFile').click();
+$('#velFile').onchange = async () => {
+  const f = $('#velFile').files[0]; if (!f) return;
+  $('#velFile').value = '';
+  let pages;
+  try{ pages = await pdfToItemPages(await f.arrayBuffer()); }
+  catch(e){
+    alert(e && e.message === 'offline'
+      ? 'Per il primo caricamento di un PDF serve una connessione (scarico la libreria di lettura); poi resta disponibile offline.'
+      : 'PDF non leggibile su questo dispositivo.');
+    return;
+  }
+  let all = [];
+  try{ all = velParseElenco(pages.map(pzLinesFromItems)); }catch(e){}
+  if (!all.length){
+    alert('In questo PDF non ho riconosciuto un "Elenco Iscritti" (righe con tessera CSAIn, nome, codice fiscale e categoria).');
+    return;
+  }
+  const cmp = all.filter(a => VELCATS.includes(a.cat))
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'it'))
+    .map(a => ({nome: a.nome, comp: a.comp, cat: a.cat, fps: '', man: false}));
+  if (!cmp.length){
+    alert(`Elenco letto (${all.length} iscritti) ma nessun arciere nelle categorie compound (${VELCATS.join('/')}).`);
+    return;
+  }
+  if (S.vel && S.vel.list.length && !confirm(`Sostituire la lista attuale con i ${cmp.length} compound di "${f.name}"? Le velocità già misurate degli stessi nomi vengono mantenute.`)) return;
+  if (S.vel) cmp.forEach(v => {
+    const old = S.vel.list.find(x => x.nome === v.nome);
+    if (old && old.fps !== '') v.fps = old.fps;
+  });
+  const manual = S.vel ? S.vel.list.filter(x => x.man) : [];
+  S.vel = {fonte: f.name, list: [...cmp, ...manual].sort((a, b) => a.nome.localeCompare(b.nome, 'it'))};
+  save(); renderVel();
+  addDiario(`Caricato elenco iscritti "${f.name}" — ${all.length} iscritti, ${cmp.length} compound (${VELCATS.join('/')}) da controllare`);
+};
+$('#velClr').onclick = () => {
+  if (!S.vel) return;
+  if (!confirm('Eliminare la lista del controllo velocità (misure comprese)?')) return;
+  S.vel = null; save(); renderVel();
+};
+$('#velAdd').onclick = () => {
+  const nome = $('#velNome').value.trim();
+  if (!nome){ alert('Indica nome e cognome.'); return; }
+  S.vel = S.vel || {fonte: '', list: []};
+  S.vel.list.push({nome: nome.toUpperCase(), comp: '', cat: '', fps: '', man: true});
+  S.vel.list.sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
+  $('#velNome').value = '';
+  save(); renderVel();
+};
+$('#velNome').addEventListener('keydown', e => { if (e.key === 'Enter') $('#velAdd').onclick(); });
+function velSumHtml(){
+  const meas = S.vel.list.filter(v => velEsito(v)).length;
+  const ko = S.vel.list.filter(v => velEsito(v) === 'ko').length;
+  return `<div class="sum-row" style="margin-top:4px"><span>Misurati</span>
+    <span class="val ${ko ? 'bad' : (meas === S.vel.list.length && meas ? 'good' : '')}">${meas}/${S.vel.list.length}${ko ? ' · ' + ko + ' oltre il limite' : ''}</span></div>`;
+}
+function renderVel(){
+  const top = $('#velTop'), box = $('#velList');
+  $('#velClr').style.display = S.vel ? 'inline-flex' : 'none';
+  if (!S.vel || !S.vel.list.length){
+    top.innerHTML = '';
+    box.innerHTML = '<div class="empty-hint">Nessuna lista caricata: importa l’elenco iscritti o aggiungi gli arcieri a mano.</div>';
+    return;
+  }
+  top.innerHTML = (S.vel.fonte ? `<p class="muted" style="margin:4px 0 0">${esc(S.vel.fonte)}</p>` : '') + velSumHtml();
+  box.innerHTML = S.vel.list.map((v, i) => {
+    const est = velEsito(v);
+    return `<div class="ar-row">
+      <div class="ar-info">
+        <div class="l1">${esc(v.nome)}${v.man ? ' <span class="muted" style="font-weight:400">· manuale</span>' : ''}</div>
+        <div class="l2">${esc(v.comp) || '&nbsp;'}</div>
+      </div>
+      <span class="ar-cat">${esc(v.cat)}</span>
+      <input type="number" class="vel-fps" inputmode="decimal" placeholder="fps" data-vfps="${i}" value="${esc(v.fps)}">
+      <span class="vel-esito ${est === 'ko' ? 'bad' : est === 'ok' ? 'good' : 'mut'}" data-vest="${i}">${est === 'ko' ? '✗ OLTRE' : est === 'ok' ? '✓ regolare' : '—'}</span>
+      ${v.man ? `<button class="icon-btn" data-vdel="${i}" aria-label="Elimina" style="width:32px;height:32px;font-size:.85rem">🗑</button>` : ''}
+    </div>`;
+  }).join('');
+  box.querySelectorAll('[data-vfps]').forEach(inp => {
+    inp.oninput = () => {
+      const i = +inp.dataset.vfps;
+      const v = S.vel.list[i];
+      v.fps = inp.value; save();
+      const est = velEsito(v);
+      const sp = box.querySelector(`[data-vest="${i}"]`);
+      sp.className = 'vel-esito ' + (est === 'ko' ? 'bad' : est === 'ok' ? 'good' : 'mut');
+      sp.textContent = est === 'ko' ? '✗ OLTRE' : est === 'ok' ? '✓ regolare' : '—';
+      const sum = top.querySelector('.sum-row');
+      if (sum) sum.outerHTML = velSumHtml();
+    };
+    inp.onchange = () => {
+      const v = S.vel.list[+inp.dataset.vfps];
+      if (velEsito(v) === 'ko' && !v.warned){
+        v.warned = true; save();
+        addDiario(`Controllo velocità: ${v.nome}${v.cat ? ' (' + v.cat + ')' : ''} ${v.fps} fps > ${VELMAX} fps — squalifica immediata`);
+      }
+    };
+  });
+  box.querySelectorAll('[data-vdel]').forEach(b => b.onclick = () => {
+    const i = +b.dataset.vdel;
+    if (!confirm(`Eliminare ${S.vel.list[i].nome} dalla lista?`)) return;
+    S.vel.list.splice(i, 1);
+    if (!S.vel.list.length && !S.vel.fonte) S.vel = null;
+    save(); renderVel();
+  });
+}
+
+/* --- emergenze --- */
+$('#emTel').value = S.emTel || '';
+$('#emTel').oninput = () => { S.emTel = $('#emTel').value; save(); syncEmLinks(); };
+function syncEmLinks(){
+  const r = $('#emResp'), s = $('#emSocc');
+  if (S.gara.gTel){ r.href = 'tel:' + S.gara.gTel.replace(/\s+/g,''); r.style.opacity = 1; }
+  else { r.href = '#'; r.style.opacity = .45; r.onclick = e => { e.preventDefault(); alert('Inserisci il telefono del responsabile nei dati gara.'); }; }
+  if (S.emTel){ s.href = 'tel:' + S.emTel.replace(/\s+/g,''); s.style.opacity = 1; s.onclick = null; }
+  else { s.href = '#'; s.style.opacity = .45; s.onclick = e => { e.preventDefault(); alert('Inserisci qui sotto il numero del soccorso sul campo.'); }; }
+}
+let gpsTxt = '';
+$('#gpsGet').onclick = () => {
+  const r = $('#gpsRes');
+  if (!navigator.geolocation){ r.className = 'res show bad'; r.textContent = 'GPS non disponibile su questo dispositivo.'; return; }
+  r.className = 'res show neutral'; r.textContent = 'Rilevo la posizione\u2026';
+  navigator.geolocation.getCurrentPosition(pos => {
+    const la = pos.coords.latitude.toFixed(5), lo = pos.coords.longitude.toFixed(5);
+    gpsTxt = la + ', ' + lo;
+    r.className = 'res show good';
+    r.innerHTML = `<span class="big">${la}, ${lo}</span>Precisione \u00b1${Math.round(pos.coords.accuracy)} m — detta queste coordinate al 112.`;
+    $('#gpsCopy').style.display = 'inline-flex';
+  }, err => {
+    r.className = 'res show bad';
+    r.textContent = 'Posizione non disponibile: ' + (err.code === 1 ? 'consenti l\u2019accesso alla posizione nelle impostazioni.' : 'riprova all\u2019aperto.');
+  }, {enableHighAccuracy:true, timeout:15000, maximumAge:30000});
+};
+$('#gpsCopy').onclick = async () => {
+  try{ await navigator.clipboard.writeText(gpsTxt); $('#gpsCopy').textContent = 'Copiate \u2713';
+    setTimeout(() => $('#gpsCopy').textContent = 'Copia coordinate', 1500); }catch(e){}
+};
+
+function renderLog(){ renderDiario(); renderSanz(); renderRicorsi(); renderVel(); syncEmLinks(); if (typeof renderBrief === 'function') renderBrief(); if (typeof renderIscr === 'function') renderIscr(); }
+document.querySelector('#nav [data-v="log"]').addEventListener('click', renderLog);
+renderLog();
+
+/* --- relazione: cronologia, sanzioni, controlli --- */
+const _buildRel2 = buildRel;
+buildRel = function(){
+  let txt = _buildRel2();
+  const B = [];
+  if (S.diario.length){
+    B.push('\nCRONOLOGIA EVENTI');
+    S.diario.forEach(d => B.push(`  ${hhmm(d.ts)} \u2014 ${d.txt}`));
+  }
+  B.push('\nSANZIONI COMMINATE');
+  if (S.sanz.length) S.sanz.forEach(s =>
+    B.push(`  ${hhmm(s.ts)} \u2014 ${s.tipo.toUpperCase()}: ${s.arc}${s.pz ? ' (pz ' + s.pz + ')' : ''}${s.mot ? ' \u2014 ' + s.mot : ''}`));
+  else B.push('  Nessuna.');
+  if (S.vel && S.vel.list.length){
+    const meas = S.vel.list.filter(v => velEsito(v));
+    const ko = S.vel.list.filter(v => velEsito(v) === 'ko');
+    B.push(`\nCONTROLLO VELOCIT\u00c0 COMPOUND (${VELCATS.join('/')}, limite ${VELMAX} fps): ${meas.length}/${S.vel.list.length} misurati${ko.length ? '' : (meas.length ? ' \u2014 tutti regolari' : '')}`);
+    ko.forEach(v => B.push(`  \u2717 ${v.nome}${v.cat ? ' (' + v.cat + ')' : ''}: ${v.fps} fps oltre il limite \u2192 squalifica immediata`));
+  }
+  if (S.classificaTs)
+    B.push(`\nClassifica pubblicata alle ${hhmm(S.classificaTs)} \u2014 termine ricorsi ${hhmm(S.classificaTs + 30*60000)}.`);
+  txt = txt.replace('\nCRITICIT\u00c0 E FATTI RILEVANTI', B.join('\n') + '\n\nCRITICIT\u00c0 E FATTI RILEVANTI');
+  return txt;
+};
+
+/* ================== CASISTICA ================== */
+const CAS = [
+ ["Freccia cade a terra a trazione avvenuta","\u00c8 da considerarsi scoccata se l\u2019arciere non riesce a recuperarla senza superare con i piedi il picchetto, la linea di tiro o l\u2019area di tiro.","Reg. Sportivo Cap. IV Par. V.5"],
+ ["Freccia cade dal supporto prima della trazione","L\u2019arciere pu\u00f2 rientrare nel caso precedente; se la freccia \u00e8 irraggiungibile pu\u00f2 utilizzarne un\u2019altra. A trazione iniziata, se cade dal rest/tappetino, la trazione pu\u00f2 essere ripetuta.","Cap. IV Par. V.3 e V.6"],
+ ["Quante volte si pu\u00f2 ripetere la trazione","Una sola volta per ogni freccia, salvo che vada ripetuta per evidenti motivi di sicurezza. I tempi vanno comunque rispettati.","Cap. IV Par. V.2 e V.4"],
+ ["Freccia trapassa il bersaglio senza rimanere infissa","Non \u00e8 valida e l\u2019evento va segnalato immediatamente al GdG. Solo per Prime Frecce: se la freccia rimbalza verso l\u2019arciere si segna il punteggio pi\u00f9 basso \u201cSagoma\u201d.","Cap. IV Par. VI.5"],
+ ["Freccia si infila nella cocca di un\u2019altra","Ha lo stesso punteggio della freccia colpita.","Cap. IV Par. VI.8"],
+ ["Freccia deviata da un ostacolo o rimbalzo sul terreno","Se colpisce il bersaglio \u00e8 considerata valida. Nei bersagli 3D conta il primo punto di impatto sulla sagoma.","Cap. IV Par. VI.6-7"],
+ ["Freccia sulla linea di demarcazione","Per assegnare il punteggio superiore l\u2019asta deve almeno toccare (tangenza) la linea esterna della zona superiore.","Cap. IV Par. VI.9"],
+ ["Errore di sequenza di tiro","Si annulla il punteggio sul bersaglio sbagliato e quello del bersaglio su cui si sarebbe dovuto tirare. Se l\u2019errore avviene tirando a una sagoma gi\u00e0 correttamente colpita, il punteggio gi\u00e0 acquisito resta valido. Se l\u2019arciere si accorge di aver sbagliato la progressione delle frecce, pu\u00f2 comunicarlo subito al responsabile di piazzola e continuare validamente.","Cap. V Par. VIII h"],
+ ["Arciere scocca pi\u00f9 frecce del consentito","Si annulla il punteggio di tutta la serie; se il punteggio risultante \u00e8 zero, l\u2019arciere viene ammonito.","Cap. IV Par. V.8"],
+ ["Arco rotto durante la gara","Pu\u00f2 essere sostituito con uno della stessa categoria, previa comunicazione al GdG. La squadra attende max 30 minuti; le piazzole perse non si recuperano. Solo outdoor: dopo rottura di arco/corda/rest/bottone/mirino l\u2019arciere pu\u00f2 provare il materiale con max 3 frecce su un bersaglio gi\u00e0 concluso, autorizzato dal responsabile di piazzola.","Cap. V Par. VIII k · Cap. IV Par. V.12"],
+ ["Arciere deve abbandonare temporaneamente","Per valido motivo, previa comunicazione al Presidente ASD o al GdG, accompagnato dal personale. La squadra prosegue; al ritorno non recupera le piazzole gi\u00e0 ultimate.","Cap. IV Par. V.13"],
+ ["Modifica della taratura dell\u2019arco in gara","Vietata, cos\u00ec come modificare il carico. Il ripristino ai valori corretti \u00e8 possibile solo previa autorizzazione del responsabile di piazzola, se la taratura \u00e8 saltata o per manutenzione di parti danneggiate.","Cap. IV Par. V.14"],
+ ["Uso del binocolo","Consentito prima della sequenza di tiro; usarlo tra i tiri della stessa serie annulla il punteggio di tutta la serie. Il tempo del binocolo \u00e8 dentro il tempo della serie. Indoor: vietato tra un tiro e l\u2019altro, obbligo di rientro dietro la linea d\u2019attesa.","Cap. V Par. VIII d · Cap. VI Par. IV.8"],
+ ["Arciere supera la tabella o si avvicina al bersaglio","Non \u00e8 consentito avvicinarsi al bersaglio o superare i picchetti finch\u00e9 tutta la squadra non ha tirato: punteggio della piazzola annullato, recidivi squalificati.","Cap. IV Par. VI.4"],
+ ["Bersaglio o frecce toccati prima della registrazione","N\u00e9 il bersaglio n\u00e9 le frecce vanno toccati finch\u00e9 tutti i punti sono registrati: il punteggio dell\u2019arciere inadempiente viene annullato. Freccia sotto la sagoma: il responsabile pu\u00f2 muovere leggermente la sagoma solo dopo la registrazione delle altre frecce.","Cap. IV Par. VI.11"],
+ ["Freccia senza anelli o senza nome/tessera","Le frecce senza anelli di riferimento non acquisiscono punteggio; senza riconoscimento scritto sull\u2019asta la freccia non \u00e8 valida (\u00e8 possibile rendere riconoscibili le aste durante la gara). Diametro max asta/punta 9,4 mm.","Cap. III Par. I"],
+ ["Velocit\u00e0 frecce oltre 300 fps","Squalifica immediata dell\u2019arciere. Rilevamento con cronotachigrafo a 1,5\u20132 m, prima e/o durante la gara a discrezione dei GdG.","Cap. III Par. I.7-8 e Par. II"],
+ ["Errore in piazzola a tempo limitato","Qualsiasi errore o irregolarit\u00e0 nella sequenza annulla l\u2019intera serie (eccetto categorie AN, RI, CO, SL, SI, FS). Interruzione per motivi di sicurezza non imputabili: si riprende con il tempo residuo. Trazione incompleta o punto di rilascio variato: serie annullata; con punteggio zero scatta l\u2019ammonizione.","Cap. V Par. IV"],
+ ["Maltempo o sospensione della gara","GdG e/o Presidente ASD possono sospendere: 1 segnale acustico = sospensione temporanea, un ulteriore segnale = ripresa, 3 segnali = sospensione definitiva con ritorno al ritrovo. Sospensione definitiva: gara valida solo con almeno 12 piazzole completate da tutte le squadre, altrimenti declassata ad amichevole.","Cap. V Par. I k · Cap. IV Par. XI"],
+ ["Aggressioni verbali o insulti","Sanzionati con l\u2019immediata squalifica, verso chiunque siano rivolti. Segnalazioni e lamentele vanno presentate al GdG nei modi dovuti.","Cap. IV Par. I.5"],
+ ["Ricorso presentato","In forma scritta al GdG, entro 30 minuti dalla pubblicazione della classifica e comunque prima delle premiazioni. Gli interessati devono poter esporre le loro motivazioni; sentite le parti, la decisione del GdG \u00e8 inappellabile. Irregolarit\u00e0 di allestimento valutabili a priori: solo se l\u2019arciere ha chiesto l\u2019intervento del GdG prima di tirare in quella piazzola.","Cap. IV Par. IX e VII.2"],
+ ["Arciere si ritira prima della fine","Firma le proprie tabelle segnapunti e le lascia al responsabile di piazzola: resta valido il punteggio fino a quel momento. Tabelle non firmate = intero punteggio annullato.","Cap. IV Par. VI.12"],
+ ["Minori in piazzola","I minori di 16 anni devono sempre avere un accompagnatore in piazzola, in regola con il tesseramento CSAIn.","Cap. IV Par. IV.7"]
+];
+function renderCas(){
+  const q = normH($('#casQ').value || '');
+  const box = $('#casList');
+  const list = CAS.filter(([t, a]) => !q || normH(t).includes(q) || normH(a).includes(q));
+  if (!list.length){ box.innerHTML = '<div class="empty-hint">Nessun caso trovato.</div>'; return; }
+  box.innerHTML = list.map(([t, a, ref], i) => `
+    <div class="cas-item"><div class="cas-q" data-cas="${i}">${esc(t)}</div>
+    <div class="cas-a">${esc(a)}<span class="ref">${esc(ref)}</span></div></div>`).join('');
+  box.querySelectorAll('.cas-q').forEach(el => el.onclick = () => el.parentElement.classList.toggle('open'));
+}
+$('#casQ').oninput = renderCas;
+renderCas();
+
+/* ================== SPAREGGIO ================== */
+['pxA0','pxA1','pxA2','pxA3','pxB0','pxB1','pxB2','pxB3'].forEach(id => $('#'+id).oninput = pxCalc);
+function pxCalc(){
+  const r = $('#pxRes');
+  const v = id => { const x = $('#'+id).value; return x === '' ? null : +x; };
+  const A = [v('pxA0'), v('pxA1'), v('pxA2'), v('pxA3')];
+  const B = [v('pxB0'), v('pxB1'), v('pxB2'), v('pxB3')];
+  if (A[0] == null || B[0] == null){ r.className = 'res'; return; }
+  const steps = ['punti', 'Spot', 'Super Spot', 'Perfect'];
+  for (let i = 0; i < 4; i++){
+    if (A[i] == null || B[i] == null){
+      r.className = 'res show neutral';
+      r.innerHTML = `<span class="big">PARIT\u00c0 su ${steps.slice(0, i).join(', ')}</span>Inserisci il numero di ${steps[i]} per proseguire lo spareggio.`;
+      return;
+    }
+    if (A[i] !== B[i]){
+      const w = A[i] > B[i] ? 'A' : 'B';
+      r.className = 'res show good';
+      r.innerHTML = `<span class="big">VINCE ARCIERE ${w}</span>${i === 0 ? 'Per punteggio' : 'A parit\u00e0 di ' + steps.slice(0, i).join(', ') + ', per maggior numero di ' + steps[i]} (${A[i]} vs ${B[i]}).`;
+      return;
+    }
+  }
+  r.className = 'res show neutral';
+  r.innerHTML = `<span class="big">EX AEQUO</span>Parit\u00e0 su punti, Spot, Super Spot e Perfect: \u00e8 decretato l\u2019ex aequo (dove il Perfect non \u00e8 previsto dalla tipologia di gara, fermarsi al passaggio precedente).`;
+}
+</script>
+<script>
+/* ================== RIORGANIZZAZIONE UI ================== */
+S.ui = S.ui || {};
+
+/* --- sposta le sezioni esistenti nei wrapper Consulta e Referto --- */
+(function(){
+  const cons = $('#consPanes'), fine = $('#finePanes');
+  const vReg = $('#v-reg'), vTools = $('#v-tools'), vRel = $('#v-rel'), vArch = $('#v-arch');
+  const cas = $('#casCard');
+  const casPane = document.createElement('div'); casPane.id = 'p-cas';
+  cas.parentElement.removeChild(cas); casPane.appendChild(cas);
+  [vReg, vTools].forEach(s => { s.classList.remove('view', 'on'); cons.appendChild(s); });
+  cons.appendChild(casPane);
+  [vRel, vArch].forEach(s => { s.classList.remove('view', 'on'); fine.appendChild(s); });
+
+  function subnav(segId, panes, key, def, onShow){
+    const seg = $(segId);
+    const show = p => {
+      Object.entries(panes).forEach(([k, el]) => el.style.display = k === p ? '' : 'none');
+      seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.p === p));
+      S.ui[key] = p; save();
+      if (onShow) onShow(p);
+    };
+    seg.querySelectorAll('button').forEach(b => b.onclick = () => show(b.dataset.p));
+    show(S.ui[key] || def);
+  }
+  subnav('#consSeg', {reg:vReg, cas:casPane, tools:vTools}, 'cons', 'reg');
+  subnav('#fineSeg', {rel:vRel, arch:vArch}, 'fine', 'rel', p => { if (p === 'arch'){ renderUsers(); renderArch(); } });
+
+  /* sottosezioni Registro */
+  const lpanes = {};
+  $$('#v-log [data-lsec]').forEach(el => (lpanes[el.dataset.lsec] = lpanes[el.dataset.lsec] || []).push(el));
+  const lseg = $('#logSeg');
+  const lshow = p => {
+    Object.entries(lpanes).forEach(([k, els]) => els.forEach(el => el.style.display = k === p ? '' : 'none'));
+    lseg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.p === p));
+    S.ui.log = p; save();
+  };
+  lseg.querySelectorAll('button').forEach(b => b.onclick = () => lshow(b.dataset.p));
+  lshow(S.ui.log || 'dia');
+})();
+
+/* --- Dati gara richiudibili con riepilogo --- */
+function garaSum(){
+  const g = pzGara();
+  const parts = [];
+  if (g) parts.push(g.n + ' ' + g.s);
+  if (S.gara.gLoc) parts.push(S.gara.gLoc);
+  if (S.gara.gData) parts.push(S.gara.gData.split('-').reverse().join('/'));
+  $('#garaSum').textContent = parts.join(' · ');
+}
+function garaSync(){
+  const open = S.ui.garaOpen !== undefined ? S.ui.garaOpen : !S.gara.gTipo;
+  $('#garaCard').classList.toggle('closed', !open);
+  garaSum();
+}
+$('#garaHd').onclick = () => {
+  S.ui.garaOpen = $('#garaCard').classList.contains('closed'); save(); garaSync();
+};
+const _updateCtx2 = updateCtx;
+updateCtx = function(){ _updateCtx2(); garaSum(); };
+garaSync();
+
+/* --- Strumenti ad accordion --- */
+$$('#v-tools > .card').forEach(card => {
+  const h = card.querySelector('h2'); if (!h) return;
+  const hd = document.createElement('div'); hd.className = 'acc-hd';
+  card.insertBefore(hd, h); hd.appendChild(h);
+  hd.insertAdjacentHTML('beforeend', '<span class="acc-sum"></span><svg class="chev2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>');
+  const body = document.createElement('div'); body.className = 'acc-body';
+  while (hd.nextSibling) body.appendChild(hd.nextSibling);
+  card.appendChild(body);
+  card.classList.add('acc', 'closed');
+  hd.onclick = () => {
+    const opening = card.classList.contains('closed');
+    $$('#v-tools > .card.acc').forEach(c => c.classList.add('closed'));
+    if (opening) card.classList.remove('closed');
+  };
+});
+/* il primo strumento parte aperto */
+const firstTool = $('#v-tools > .card.acc');
+if (firstTool) firstTool.classList.remove('closed');
+</script>
+<script>
+/* ================== VERIFICHE RICOGNIZIONE PER PIAZZOLA (punti 13–29) ================== */
+/* cond: always | multi (più sagome) | area (area di tiro) | mob (sagoma mobile) */
+const PZCHK = [
+ [13,  "Distanza dalla piazzola precedente/successiva", "always"],
+ [14,  "Tabella di piazzola conforme al regolamento", "always"],
+ [15,  "1° picchetto o area di tiro visibile dalla tabella", "always"],
+ [16,  "Sagome conformi e gruppo di appartenenza corretto", "always"],
+ [17,  "Fissaggio delle sagome", "always"],
+ [18,  "Distanze delle sagome dal 1° picchetto verificate", "always"],
+ ["18b","Distanze massime rispettate per le sagome dei gruppi inferiori", "multi"],
+ [19,  "Spostamento alla piazzola successiva in sicurezza", "always"],
+ [20,  "Recupero delle frecce in sicurezza", "always"],
+ ["21·27","Area di tiro: dimensioni minime (A 1,0 × B 0,5 m)", "area"],
+ [25,  "Mobile: frecce fuori sagoma non di intralcio al carrello, nessun ostacolo", "mob"],
+ [26,  "Mobile: finestra di tiro, sicurezza manovratore, attrezzatura conforme", "mob"],
+ [28,  "Prime Frecce e Lupetti possono tirare a tutte le sagome", "always"],
+ [29,  "Recupero frecce non ostacolato da elementi naturali/artificiali", "always"]
+];
+function pzChkFor(p){
+  return PZCHK.filter(([id, label, cond]) =>
+    cond === 'always' ||
+    (cond === 'multi' && parseInt(p.nsag) >= 2) ||
+    (cond === 'area' && (p.areaTec || p.areaTrad)) ||
+    (cond === 'mob' && p.mob));
+}
+const PZCHKOPEN = {};
+function pzChkBlock(p, i){
+  const g = pzGara();
+  if (!g || (PZCFG[g.id] || {}).linea || !p.gr) return '';
+  const items = pzChkFor(p);
+  const done = items.filter(([id]) => (p.chk || {})[id]).length;
+  const kos = items.filter(([id]) => (p.chk || {})[id] === 'KO').length;
+  const open = !!PZCHKOPEN[i];
+  return `<div class="pzchk ${open ? '' : 'closed'}" data-pzchk="${i}">
+    <div class="pzchk-hd">Verifiche ricognizione
+      <span class="muted" style="font-weight:600">${done}/${items.length}${kos ? ' · ' + kos + ' KO' : ''}</span>
+      <svg class="chev2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="pzchk-body">` +
+    items.map(([id, label]) => {
+      const st = (p.chk || {})[id] || '';
+      return `<div class="pzchk-row">
+        <span class="num">${id}</span>
+        <span class="txt">${esc(label)}</span>
+        <div class="okko">
+          <button type="button" class="ok ${st === 'OK' ? 'on' : ''}" data-pchk="${id}" data-pv="OK">OK</button>
+          <button type="button" class="ko ${st === 'KO' ? 'on' : ''}" data-pchk="${id}" data-pv="KO">KO</button>
+        </div>
+      </div>`;
+    }).join('') +
+    `<div class="pzchk-foot"><button type="button" class="btn ghost small" data-pallok="1">OK su tutte le verifiche mancanti</button></div>
+    </div></div>`;
+}
+function bindPzChk(div, i){
+  const blk = div.querySelector('[data-pzchk]');
+  if (!blk) return;
+  const p = S.pz[i];
+  const refresh = () => {
+    div.querySelector('.pz-hd').innerHTML = pzHead(p, i);
+    blk.outerHTML = pzChkBlock(p, i);
+    bindPzChk(div, i);
+    const old = div.querySelector('.pz-alerts');
+    const nu = pzAlertsHtml(pzValidate(p));
+    if (old) old.outerHTML = nu;
+    else if (nu) div.querySelector('.pz-body').insertAdjacentHTML('beforeend', nu);
+    renderPzSummary();
+  };
+  blk.querySelector('.pzchk-hd').onclick = () => {
+    PZCHKOPEN[i] = blk.classList.contains('closed');
+    blk.classList.toggle('closed');
+  };
+  blk.querySelectorAll('[data-pchk]').forEach(b => b.onclick = () => {
+    const id = b.dataset.pchk;
+    p.chk = p.chk || {};
+    p.chk[id] = (p.chk[id] === b.dataset.pv) ? '' : b.dataset.pv;
+    save(); PZCHKOPEN[i] = true; refresh();
+  });
+  const all = blk.querySelector('[data-pallok]');
+  if (all) all.onclick = () => {
+    p.chk = p.chk || {};
+    pzChkFor(p).forEach(([id]) => { if (p.chk[id] !== 'KO') p.chk[id] = 'OK'; });
+    save(); PZCHKOPEN[i] = true; refresh();
+  };
+}
+const _bindPz2 = bindPz;
+bindPz = function(div, i){
+  _bindPz2(div, i);
+  bindPzChk(div, i);
+};
+/* ri-renderizza con i blocchi verifiche ora disponibili */
+renderPz();
+</script>
+<script>
+/* ================== BRIEFING PRE-GARA ================== */
+S.brief = S.brief || [];
+
+/* scaletta standard, adattata alla gara selezionata */
+function stdBrief(){
+  const g = pzGara();
+  const cfg = g ? (PZCFG[g.id] || {}) : {};
+  const out = [
+    "Presentazione del Giudice di Gara e del Responsabile dell'Organizzazione",
+    "Sicurezza: tirare solo in direzione del bersaglio; mai superare la tabella di piazzola prima del proprio turno",
+    "Controllare SEMPRE la tabella di piazzola: sequenza, spot valido, tempi e recupero",
+    "Attrezzatura integra e frecce segnate: anelli di numerazione + nome/tessera (senza, la freccia non acquisisce punteggio)",
+    "Ordine di tiro e rotazione in squadra; Prime Frecce e Lupetti tirano sempre per ultimi"
+  ];
+  if (g && (g.id === 't60' || g.id === 'tg60'))
+    out.push("In questa gara tirano per PRIMI le categorie CO/SL/SI/FS");
+  if (cfg.tempo) out.push("Piazzole a tempo limitato: " + cfg.tempo);
+  if (!cfg.linea && (cfg.mob20 || (S.pz || []).some(p => p.mob)))
+    out.push("Piazzole con sagoma mobile: dare il \u201cPronto\u201d, tirare solo nella finestra delimitata, manovratore a turno");
+  if (g && g.id === 'fs40')
+    out.push("Free-Shot: due frecce su due bersagli diversi \u2014 entrambe sulla stessa sagoma annullano la serie");
+  if (cfg.linea)
+    out.push("Rientrare dietro la linea d'attesa subito dopo la sequenza; niente binocolo tra un tiro e l'altro");
+  out.push(
+    "Recupero frecce: verificare che non ci sia nessuno alle spalle; dare/attendere il \u201clibero\u201d dove indicato",
+    "Segnali acustici: 1 = sospensione \u00b7 1 = ripresa \u00b7 3 = sospensione definitiva e ritorno al ritrovo",
+    "Punto di ristoro, servizi igienici, vie di fuga ed emergenze",
+    "Minori di 16 anni sempre con accompagnatore tesserato in piazzola",
+    "Score: firmati, con somma totale e conteggio Spot/Super Spot/Perfect; dove e quando consegnarli",
+    "Ricorsi: per iscritto al GdG entro 30 minuti dalla pubblicazione della classifica",
+    "Orario e luogo delle premiazioni"
+  );
+  return out;
+}
+/* appunti derivati dal percorso: piazzole a tempo, mobili e note */
+function pzBrief(){
+  const g = pzGara(); if (!g) return [];
+  const cfg = PZCFG[g.id] || {};
+  const lbl = cfg.linea ? 'Corsia' : 'Pz';
+  const out = [];
+  S.pz.slice(0, pzCount()).forEach((p, i) => {
+    if (!p.gr && !p.note) return;
+    if (p.tempo) out.push(`${lbl} ${i + 1}: tiro a tempo limitato`);
+    if (p.mob) out.push(`${lbl} ${i + 1}: sagoma mobile`);
+    if (p.note) out.push(`${lbl} ${i + 1}: ${p.note}`);
+  });
+  return out;
+}
+function brAdd(txt, src){
+  txt = String(txt || '').trim();
+  if (!txt) return false;
+  if (S.brief.some(b => b.txt === txt)) return false;
+  S.brief.push({id:'b' + Date.now() + Math.random().toString(36).slice(2, 5), txt, src: src || '', done:false});
+  return true;
+}
+$('#brStd').onclick = () => {
+  const n = stdBrief().filter(t => brAdd(t, 'std')).length;
+  save(); renderBrief();
+  if (!n) alert('Scaletta standard gi\u00e0 presente.');
+};
+$('#brPz').onclick = () => {
+  /* rigenera gli appunti dal percorso mantenendo lo stato "detto" dei punti identici */
+  const doneMap = {};
+  S.brief.filter(b => b.src === 'pz').forEach(b => doneMap[b.txt] = b.done);
+  S.brief = S.brief.filter(b => b.src !== 'pz');
+  const items = pzBrief();
+  items.forEach(t => { if (brAdd(t, 'pz')) S.brief[S.brief.length - 1].done = !!doneMap[t]; });
+  save(); renderBrief();
+  if (!items.length) alert('Nessun appunto ricavabile dal percorso (tempo, mobili, note delle piazzole).');
+};
+$('#brClr').onclick = () => {
+  if (!S.brief.length) return;
+  if (!confirm('Svuotare tutta la scaletta del briefing?')) return;
+  S.brief = []; save(); renderBrief();
+};
+$('#brAdd').onclick = () => { if (brAdd($('#brTxt').value)) { $('#brTxt').value = ''; save(); renderBrief(); } };
+$('#brTxt').addEventListener('keydown', e => { if (e.key === 'Enter') $('#brAdd').onclick(); });
+
+function renderBrief(){
+  const box = $('#brList');
+  const done = S.brief.filter(b => b.done).length;
+  $('#brBar').style.width = S.brief.length ? (100 * done / S.brief.length) + '%' : '0%';
+  $('#brCnt').textContent = S.brief.length ? `${done}/${S.brief.length} punti trattati` : '';
+  if (!S.brief.length){
+    box.innerHTML = '<div class="empty-hint">Scaletta vuota: parti dalla scaletta standard e aggiungi gli appunti del percorso.</div>';
+    return;
+  }
+  box.innerHTML = S.brief.map(b => `
+    <div class="bri-item ${b.done ? 'done' : ''}" data-bid="${b.id}">
+      <button class="bri-tick" aria-label="Trattato"></button>
+      <div class="bri-txt">${esc(b.txt)}${b.src === 'pz' ? '<span class="bri-src">percorso</span>' : ''}</div>
+      <button class="icon-btn" data-bdel="${b.id}" aria-label="Elimina">🗑</button>
+    </div>`).join('');
+  box.querySelectorAll('.bri-item').forEach(el => {
+    const b = S.brief.find(x => x.id === el.dataset.bid);
+    const toggle = () => { b.done = !b.done; save(); renderBrief(); };
+    el.querySelector('.bri-tick').onclick = toggle;
+    el.querySelector('.bri-txt').onclick = toggle;
+  });
+  box.querySelectorAll('[data-bdel]').forEach(btn => btn.onclick = ev => {
+    ev.stopPropagation();
+    S.brief = S.brief.filter(x => x.id !== btn.dataset.bdel); save(); renderBrief();
+  });
+}
+renderBrief();
+
+/* relazione: blocco briefing prima della cronologia */
+const _buildRel3 = buildRel;
+buildRel = function(){
+  let txt = _buildRel3();
+  if (S.brief.length){
+    const done = S.brief.filter(b => b.done);
+    const miss = S.brief.filter(b => !b.done);
+    const B = ['\nBRIEFING PRE-GARA', `Punti trattati: ${done.length}/${S.brief.length}`];
+    done.forEach(b => B.push(`  \u2713 ${b.txt}`));
+    if (miss.length){ B.push('Punti NON trattati:'); miss.forEach(b => B.push(`  \u2717 ${b.txt}`)); }
+    const anchor = txt.includes('\nCRONOLOGIA EVENTI') ? '\nCRONOLOGIA EVENTI' : '\nSANZIONI COMMINATE';
+    txt = txt.replace(anchor, B.join('\n') + '\n' + anchor);
+  }
+  return txt;
+};
+</script>
+<script>
+/* ================== ARCIERI: PIAZZOLE E CONTROLLO IN GARA ================== */
+S.iscr = S.iscr || null; S.iscrSel = S.iscrSel || 0;
+const ISCROPEN = {};
+const IRRTIPI = [
+ ['frecce', 'Frecce non segnate'],
+ ['arco', 'Arco non conforme alla categoria'],
+ ['tiro', 'Tipologia di tiro non conforme alla categoria'],
+ ['altro', 'Altra irregolarità']
+];
+
+/* --- estrazione: da pagine di elementi {s,x,y,w} a righe di testo con colonne --- */
+function pzLinesFromItems(pageItems){
+  const items = pageItems.filter(it => String(it.s).trim() !== '');
+  items.sort((a, b) => (b.y - a.y) || (a.x - b.x));
+  const lines = [];
+  items.forEach(it => {
+    const L = lines[lines.length - 1];
+    if (L && Math.abs(L.y - it.y) < 3){ L.it.push(it); if (it.y < L.y) L.y = it.y; }
+    else lines.push({y: it.y, it: [it]});
+  });
+  lines.forEach(L => {
+    L.it.sort((a, b) => a.x - b.x);
+    let t = '', prev = null;
+    L.it.forEach(o => {
+      if (prev){
+        const gap = o.x - (prev.x + prev.w);
+        t += gap > 7 ? '  ' : gap > 1 ? ' ' : '';
+      }
+      t += String(o.s);
+      prev = o;
+    });
+    L.t = t.trim();
+  });
+  return lines;
+}
+
+const ISCRBLANK = (n, campo) => ({n, campo: campo || '', arcieri: [], st: '', irr: [], note: ''});
+const ISCRCATRE = /^[A-Z]{2}-[A-Z]{2,3}$/;
+
+/* --- formato "Assegnazione piazzole" (Sagitta / Arciere Celeste) --- */
+function iscrParseSagitta(pages){
+  const turno = {n: 1, pz: []};
+  let cur = null;
+  pages.forEach(lines => lines.forEach(L => {
+    const t = L.t;
+    let m = t.match(/^Piazzola\s+(\d+)\s*(.*)$/i);
+    if (m){
+      cur = turno.pz.find(p => p.n === +m[1]);
+      if (!cur){ cur = ISCRBLANK(+m[1], m[2].trim()); turno.pz.push(cur); }
+      return;
+    }
+    if (!cur) return;
+    m = t.match(/^(\d+)\s+\d+\s+(.+?)\s+-\s+(.+?)\s+-\s*\(([^)]+)\)\s*$/);
+    if (m) cur.arcieri.push({pett: m[1], let: '', nome: m[2].trim(), comp: m[3].trim(), cat: m[4].trim()});
+  }));
+  turno.pz.sort((a, b) => a.n - b.n);
+  return {turni: [turno]};
+}
+
+/* --- formato elenco piazzole con turni (gestionale gare) --- */
+function iscrParseTurni(pages){
+  const turni = [];
+  const getTurno = n => {
+    let t = turni.find(x => x.n === n);
+    if (!t){ t = {n, pz: []}; turni.push(t); }
+    return t;
+  };
+  let curTurno = null;
+  pages.forEach(lines => {
+    let pageTurno = null;
+    lines.forEach(L => {
+      const m = L.t.match(/Turno\s*:?\s*(\d+)/i);
+      if (m && pageTurno == null) pageTurno = +m[1];
+    });
+    curTurno = getTurno(pageTurno != null ? pageTurno : (curTurno ? curTurno.n : 1));
+    const content = lines.filter(L => {
+      const t = L.t;
+      if (!t) return false;
+      if (/^Piazz\b/i.test(t) || /^Pagina\b/i.test(t) || /Turno\s*:/i.test(t) || /^Piazzole$/i.test(t)) return false;
+      if (/\d{2}\/\d{2}\/\d{4}/.test(t) && !ISCRCATRE.test(t.split(/\s{2,}/).pop() || '')) return false;
+      return true;
+    });
+    /* blocchi (una piazzola) separati da salti verticali maggiori del passo riga */
+    const steps = [];
+    for (let i = 1; i < content.length; i++){
+      const d = content[i - 1].y - content[i].y;
+      if (d > 0.5) steps.push(d);
+    }
+    steps.sort((a, b) => a - b);
+    const step = steps.length ? steps[Math.floor(steps.length * 0.25)] : 12;
+    const blocks = [];
+    let blk = null;
+    content.forEach((L, i) => {
+      const gap = i ? content[i - 1].y - L.y : Infinity;
+      if (!blk || gap > step * 1.9){ blk = []; blocks.push(blk); }
+      blk.push(L);
+    });
+    blocks.forEach(blk => {
+      let pzN = null;
+      const arcs = [];
+      const addCont = txt => { if (arcs.length && txt) arcs[arcs.length - 1].comp = (arcs[arcs.length - 1].comp + ' ' + txt).trim(); };
+      blk.forEach(L => {
+        const t = L.t;
+        /* riga arciere, con eventuale numero piazzola in testa */
+        let m = t.match(/^(?:(\d{1,2})\s+)?(\d+)\s+([A-H])(?:\s{2,}|\s)(.+)$/);
+        if (m && /\s{2,}/.test(m[4])){
+          if (m[1] != null) pzN = +m[1];
+          const chunks = m[4].split(/\s{2,}/).map(s => s.trim()).filter(Boolean);
+          let cat = '';
+          if (chunks.length > 1 && ISCRCATRE.test(chunks[chunks.length - 1])) cat = chunks.pop();
+          const nome = chunks.shift() || '';
+          arcs.push({pett: m[2], let: m[3], nome, comp: chunks.join(' '), cat});
+          return;
+        }
+        /* solo numero piazzola (eventualmente con la continuazione della compagnia) */
+        m = t.match(/^(\d{1,2})(?:\s{2,}(.+))?$/);
+        if (m){ pzN = +m[1]; addCont(m[2] ? m[2].trim() : ''); return; }
+        /* continuazione della compagnia su riga propria */
+        addCont(t);
+      });
+      if (!arcs.length) return;
+      if (pzN == null){
+        /* blocco spezzato (es. cambio pagina): accoda all'ultima piazzola */
+        const last = curTurno.pz[curTurno.pz.length - 1];
+        if (last){ last.arcieri.push(...arcs); return; }
+        pzN = 1;
+      }
+      let pz = curTurno.pz.find(p => p.n === pzN);
+      if (!pz){ pz = ISCRBLANK(pzN, ''); curTurno.pz.push(pz); }
+      pz.arcieri.push(...arcs);
+    });
+  });
+  turni.forEach(t => t.pz.sort((a, b) => a.n - b.n));
+  turni.sort((a, b) => a.n - b.n);
+  return {turni};
+}
+
+function iscrParse(pages){
+  const lines = pages.map(pzLinesFromItems);
+  const isSagitta = lines.some(pg => pg.some(L => /^Piazzola\s+\d+/i.test(L.t)));
+  const out = isSagitta ? iscrParseSagitta(lines) : iscrParseTurni(lines);
+  out.turni = (out.turni || []).filter(t => t.pz.length);
+  out.turni.forEach(t => t.pz.forEach(p => p.arcieri.forEach(a => { a.st = a.st || ''; a.irr = a.irr || []; a.note = a.note || ''; })));
+  return out;
+}
+
+/* --- caricamento lazy di pdf.js (come SheetJS: serve rete solo la prima volta) --- */
+let _pdfLoading = null;
+function loadPDFJS(){
+  if (window.pdfjsLib) return Promise.resolve();
+  if (_pdfLoading) return _pdfLoading;
+  _pdfLoading = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload = () => {
+      try{ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }catch(e){}
+      res();
+    };
+    s.onerror = () => { _pdfLoading = null; rej(new Error('offline')); };
+    document.head.appendChild(s);
+  });
+  return _pdfLoading;
+}
+async function pdfToItemPages(buf){
+  await loadPDFJS();
+  const doc = await pdfjsLib.getDocument({data: buf}).promise;
+  const pages = [];
+  for (let p = 1; p <= doc.numPages; p++){
+    const pg = await doc.getPage(p);
+    const tc = await pg.getTextContent();
+    pages.push(tc.items.map(it => ({s: it.str, x: it.transform[4], y: it.transform[5], w: it.width})));
+  }
+  try{ doc.destroy(); }catch(e){}
+  return pages;
+}
+
+/* --- import --- */
+$('#iscrImp').onclick = () => $('#iscrFile').click();
+$('#iscrFile').onchange = async () => {
+  const f = $('#iscrFile').files[0]; if (!f) return;
+  $('#iscrFile').value = '';
+  let pages;
+  try{ pages = await pdfToItemPages(await f.arrayBuffer()); }
+  catch(e){
+    alert(e && e.message === 'offline'
+      ? 'Per il primo caricamento di un PDF serve una connessione (scarico la libreria di lettura); poi resta disponibile offline.'
+      : 'PDF non leggibile su questo dispositivo.');
+    return;
+  }
+  let r;
+  try{ r = iscrParse(pages); }catch(e){ r = {turni: []}; }
+  const tot = r.turni.reduce((a, t) => a + t.pz.reduce((x, p) => x + p.arcieri.length, 0), 0);
+  if (!r.turni.length || !tot){
+    alert('In questo PDF non ho riconosciuto un elenco piazzole con nominativi.\nFormati supportati: elenco piazzole con turni e "Assegnazione piazzole" (Sagitta).');
+    return;
+  }
+  if (S.iscr){
+    const controlled = S.iscr.turni.some(t => t.pz.some(p => p.st || p.note));
+    if (!confirm(`Sostituire l'elenco attuale${controlled ? ' (compresi gli esiti già registrati)' : ''} con quello di "${f.name}"?`)) return;
+  }
+  r.fonte = f.name;
+  S.iscr = r; S.iscrSel = 0; save();
+  addDiario(`Caricato elenco piazzole "${f.name}" — ${r.turni.map(t => `turno ${t.n}: ${t.pz.length} pz`).join(' · ')}, ${tot} arcieri`);
+};
+$('#iscrClr').onclick = () => {
+  if (!S.iscr) return;
+  if (!confirm('Eliminare l’elenco piazzole e gli esiti dei controlli registrati?')) return;
+  S.iscr = null; S.iscrSel = 0; save(); renderIscr();
+};
+
+/* --- riepilogo e testo per l'organizzazione --- */
+function iscrIrrLabel(id){ const x = IRRTIPI.find(t => t[0] === id); return x ? x[1] : id; }
+function iscrProblemi(){
+  const out = [];
+  (S.iscr ? S.iscr.turni : []).forEach(t => t.pz.forEach(p => p.arcieri.forEach(a => {
+    if (a.st === 'KO') out.push({t: t.n, pz: p.n, nome: a.nome, cat: a.cat, irr: (a.irr || []).map(iscrIrrLabel), note: a.note || ''});
+  })));
+  return out;
+}
+function iscrSumText(){
+  const multi = S.iscr.turni.length > 1;
+  const g = pzGara();
+  const dt = S.gara.gData ? S.gara.gData.split('-').reverse().join('/') : '';
+  const L = ['IRREGOLARITÀ RILEVATE NEI CONTROLLI DI PIAZZOLA'];
+  const head = `${g ? g.n + ' ' + g.s + ' — ' : ''}${S.gara.gLoc || ''} ${dt}`.trim();
+  if (head) L.push(head);
+  const probs = iscrProblemi();
+  if (probs.length) probs.forEach(x => L.push(`• ${multi ? 'Turno ' + x.t + ' — ' : ''}Piazzola ${x.pz} — ${x.nome}${x.cat ? ' (' + x.cat + ')' : ''}: ${x.irr.join(', ') || 'irregolarità'}${x.note ? ' — ' + x.note : ''}`));
+  else L.push('Nessuna irregolarità rilevata.');
+  L.push('', `Il Giudice di Gara — ${S.gara.gGdg || ''}`);
+  return L.join('\n');
+}
+function renderIscrSummary(){
+  const box = $('#iscrSumCard');
+  if (!S.iscr){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const multi = S.iscr.turni.length > 1;
+  let h = '<h2>Stato controlli</h2>';
+  S.iscr.turni.forEach(t => {
+    const arcs = t.pz.flatMap(p => p.arcieri);
+    const done = arcs.filter(a => a.st).length, ko = arcs.filter(a => a.st === 'KO').length;
+    h += `<div class="sum-row"><span>${multi ? 'Turno ' + t.n : 'Arcieri controllati'}</span>
+      <span class="val ${ko ? 'bad' : (done === arcs.length && done ? 'good' : '')}">${done}/${arcs.length}${ko ? ' · ' + ko + ' irr.' : ''}</span></div>`;
+  });
+  const probs = iscrProblemi();
+  if (probs.length){
+    h += '<div class="pz-alerts">' + probs.map(x =>
+      `<div class="pz-al ko">✗ ${multi ? 'T' + x.t + ' · ' : ''}Pz ${x.pz} — ${esc(x.nome)}${x.cat ? ' (' + esc(x.cat) + ')' : ''}: ${esc(x.irr.join(', ') || 'irregolarità')}${x.note ? ' — ' + esc(x.note) : ''}</div>`).join('') + '</div>';
+    h += `<div class="toolbar"><button class="btn sec small" id="iscrCopy">Copia per l'organizzazione</button><button class="btn ghost small" id="iscrShare">Condividi</button></div>`;
+  } else {
+    h += '<p class="muted" style="margin:6px 0 0">Nessuna irregolarità registrata.</p>';
+  }
+  box.innerHTML = h;
+  const c = $('#iscrCopy');
+  if (c) c.onclick = async () => {
+    try{ await navigator.clipboard.writeText(iscrSumText()); c.textContent = 'Copiato ✓'; setTimeout(() => { c.textContent = 'Copia per l’organizzazione'; }, 1500); }
+    catch(e){ alert('Copia non riuscita: seleziona il testo dalla relazione.'); }
+  };
+  const sh = $('#iscrShare');
+  if (sh) sh.onclick = async () => {
+    if (navigator.share){ try{ await navigator.share({title: 'Irregolarità piazzole', text: iscrSumText()}); }catch(e){} }
+    else alert('Condivisione non supportata su questo dispositivo: usa Copia.');
+  };
+}
+
+/* --- elenco piazzole: esito per singolo arciere --- */
+function iscrStatus(p){
+  const arcs = p.arcieri;
+  if (arcs.some(a => a.st === 'KO')) return 'ko';
+  if (arcs.length && arcs.every(a => a.st === 'OK')) return 'ok';
+  return '';
+}
+function iscrHead(p){
+  const names = p.arcieri.map(a => (a.nome || '').split(' ')[0] || a.nome).join(', ');
+  const cats = p.arcieri.map(a => a.cat).filter(Boolean).join(' · ');
+  const done = p.arcieri.filter(a => a.st).length;
+  return `<div class="pz-n">${p.n}</div>
+    <div class="pz-info">
+      <div class="l1">${p.arcieri.length} arcier${p.arcieri.length === 1 ? 'e' : 'i'}${cats ? ' — ' + esc(cats) : ''}</div>
+      <div class="l2">${esc(names)}</div>
+    </div>
+    <span class="pz-chkcnt ${done === p.arcieri.length && done ? 'full' : ''}">${done}/${p.arcieri.length}</span>
+    <span class="pz-st ${iscrStatus(p)}"></span>`;
+}
+function iscrBody(p){
+  const rows = p.arcieri.map((a, i) => `
+    <div class="ar-row" data-ai="${i}">
+      <span class="ar-let">${esc(a.let || a.pett || '—')}</span>
+      <div class="ar-info">
+        <div class="l1">${esc(a.nome)}${a.let && a.pett ? ` <span class="muted" style="font-weight:400">· ${esc(a.pett)}</span>` : ''}</div>
+        <div class="l2">${esc(a.comp)}</div>
+      </div>
+      <span class="ar-cat">${esc(a.cat)}</span>
+      <div class="okko ar-okko">
+        <button type="button" class="ok ${a.st === 'OK' ? 'on' : ''}" data-aest="${i}:OK">OK</button>
+        <button type="button" class="ko ${a.st === 'KO' ? 'on' : ''}" data-aest="${i}:KO">KO</button>
+      </div>
+    </div>
+    ${a.st === 'KO' ? `
+    <div class="ar-det" data-adet="${i}">
+      <div class="chkline" style="margin-top:2px">${IRRTIPI.map(([id, lb]) =>
+        `<label class="chk"><input type="checkbox" data-airr="${i}:${id}" ${(a.irr || []).includes(id) ? 'checked' : ''}>${lb}</label>`).join('')}</div>
+      <input type="text" data-anota="${i}" value="${esc(a.note || '')}" placeholder="Nota per l'organizzazione (correzione per la classifica…)" style="margin-top:8px">
+    </div>` : ''}`).join('');
+  return `${p.campo ? `<p class="muted" style="margin:0 0 6px">${esc(p.campo)}</p>` : ''}
+    <div>${rows}</div>
+    <div class="toolbar"><button type="button" class="btn ghost small" data-allok="1">OK su tutti gli arcieri non segnati</button></div>`;
+}
+function bindIscr(div, p){
+  const rerender = () => {
+    div.querySelector('.pz-hd').innerHTML = iscrHead(p);
+    div.querySelector('.pz-body').innerHTML = iscrBody(p);
+    bindIscr(div, p);
+    renderIscrSummary();
+  };
+  div.querySelectorAll('[data-aest]').forEach(b => b.onclick = () => {
+    const [i, v] = b.dataset.aest.split(':');
+    const a = p.arcieri[+i];
+    a.st = (a.st === v) ? '' : v;
+    a.irr = a.irr || [];
+    save(); rerender();
+  });
+  div.querySelectorAll('[data-airr]').forEach(c => c.onchange = () => {
+    const [i, id] = c.dataset.airr.split(':');
+    const a = p.arcieri[+i];
+    a.irr = c.checked ? [...new Set([...(a.irr || []), id])] : (a.irr || []).filter(x => x !== id);
+    save();
+    div.querySelector('.pz-hd').innerHTML = iscrHead(p);
+    renderIscrSummary();
+  });
+  div.querySelectorAll('[data-anota]').forEach(inp => inp.oninput = () => {
+    p.arcieri[+inp.dataset.anota].note = inp.value;
+    save(); renderIscrSummary();
+  });
+  const all = div.querySelector('[data-allok]');
+  if (all) all.onclick = () => {
+    p.arcieri.forEach(a => { if (!a.st) a.st = 'OK'; });
+    save(); rerender();
+  };
+}
+function renderIscr(){
+  const top = $('#iscrTop'), list = $('#iscrList');
+  $('#iscrClr').style.display = S.iscr ? 'inline-flex' : 'none';
+  if (!S.iscr){
+    top.innerHTML = '<div class="empty-hint">Nessun elenco caricato. Chiedi all’organizzazione il PDF delle piazzole con i nominativi (punto 6 della checklist) e caricalo qui.</div>';
+    renderIscrSummary(); list.innerHTML = ''; return;
+  }
+  if (S.iscrSel >= S.iscr.turni.length) S.iscrSel = 0;
+  const multi = S.iscr.turni.length > 1;
+  const T = S.iscr.turni[S.iscrSel];
+  top.innerHTML = `<p class="muted" style="margin:4px 0 0">${esc(S.iscr.fonte || '')}</p>` +
+    (multi ? `<div class="seg" id="iscrTurnoSeg" style="margin-top:8px">${S.iscr.turni.map((t, i) =>
+      `<button data-i="${i}" class="${i === S.iscrSel ? 'on' : ''}">Turno ${t.n}</button>`).join('')}</div>` : '');
+  if (multi) top.querySelectorAll('#iscrTurnoSeg button').forEach(b => b.onclick = () => {
+    S.iscrSel = +b.dataset.i; save(); renderIscr();
+  });
+  renderIscrSummary();
+  list.innerHTML = '';
+  T.pz.forEach(p => {
+    const key = T.n + ':' + p.n;
+    const div = document.createElement('div');
+    div.className = 'pz-item' + (ISCROPEN[key] ? ' open' : '');
+    div.innerHTML = `<div class="pz-hd">${iscrHead(p)}</div><div class="pz-body">${ISCROPEN[key] ? iscrBody(p) : ''}</div>`;
+    div.querySelector('.pz-hd').onclick = () => {
+      ISCROPEN[key] = !ISCROPEN[key];
+      div.classList.toggle('open', ISCROPEN[key]);
+      div.querySelector('.pz-body').innerHTML = ISCROPEN[key] ? iscrBody(p) : '';
+      if (ISCROPEN[key]) bindIscr(div, p);
+    };
+    if (ISCROPEN[key]) bindIscr(div, p);
+    list.appendChild(div);
+  });
+}
+renderIscr();
+
+/* --- relazione: blocco controlli di piazzola --- */
+const _buildRelIscr = buildRel;
+buildRel = function(){
+  let txt = _buildRelIscr();
+  if (S.iscr){
+    const multi = S.iscr.turni.length > 1;
+    const B = ['\nCONTROLLI DI PIAZZOLA IN GARA (elenco iscritti)'];
+    S.iscr.turni.forEach(t => {
+      const arcs = t.pz.flatMap(p => p.arcieri);
+      const done = arcs.filter(a => a.st).length, ko = arcs.filter(a => a.st === 'KO').length;
+      B.push(`${multi ? 'Turno ' + t.n + ': ' : ''}controllati ${done}/${arcs.length} arcieri${ko ? ` — ${ko} con irregolarità` : (done ? ' — tutti conformi' : '')}`);
+    });
+    iscrProblemi().forEach(x => B.push(`  ✗ ${multi ? 'Turno ' + x.t + ' — ' : ''}Piazzola ${x.pz} — ${x.nome}${x.cat ? ' (' + x.cat + ')' : ''}: ${x.irr.join(', ') || 'irregolarità'}${x.note ? ' — ' + x.note : ''}`));
+    txt = txt.replace('\nCRITICITÀ E FATTI RILEVANTI', B.join('\n') + '\n\nCRITICITÀ E FATTI RILEVANTI');
+  }
+  return txt;
+};
+</script>
+<script>
+/* ================== GUIDA D'USO ==================
+   Da aggiornare a ogni modifica: incrementa APP_VER (allineata alla cache del
+   service worker) e aggiungi la voce in cima al Changelog. */
+const APP_VER = 'v1.12 · luglio 2026';
+
+const GUIDE = [
+ ["Panoramica", [
+  ["Com'è organizzata l'app", "Cinque schede sul flusso della giornata: <b>Checklist</b> (preparazione e modulo ufficiale), <b>Piazzole</b> (tabella logistica e ricognizione), <b>Registro</b> (tutto ciò che accade in gara), <b>Consulta</b> (regolamenti, casistica, strumenti), <b>Referto</b> (relazione e archivio)."],
+  ["Tutto offline", "L'app funziona senza connessione: dati salvati sul dispositivo, nessun server. Serve la rete solo al primo avvio e per il primo import/export xlsx (scarica la libreria, poi resta in cache)."],
+  ["Una gara alla volta", "L'app lavora su una gara attiva; con \u201cNuova gara\u201d archivi quella in corso e riparti pulito. Le gare archiviate restano consultabili nel Referto."]
+ ]],
+ ["Checklist", [
+  ["Dati gara", "Tipo di gara, data, località, ASD, responsabile e ambulanza: compaiono nell'intestazione, guidano le verifiche delle Piazzole e riempiono la relazione. La card si richiude da sola una volta compilata (tocca il titolo per riaprirla)."],
+  ["Il modulo ufficiale", "Le voci della Check-list GdG 2026 divise per fasi, con OK/KO e nota per ciascuna. Si apre da sola la fase in corso; i KO finiscono automaticamente nella relazione."],
+  ["Punti 13\u201329", "Le verifiche sulla singola piazzola non sono qui: si compilano dentro ogni piazzola, nel tab Piazzole, filtrate per tipo."],
+  ["Nuova gara", "Azzera checklist, piazzole, registro e relazione proponendo prima l'archiviazione. Il giudice attivo resta impostato."]
+ ]],
+ ["Piazzole", [
+  ["Tabella logistica", "Selezionato il tipo di gara, si generano 20 piazzole (o 10+10 col selettore). Per ciascuna: gruppo, n° sagome, tipologia, produttore, distanze picchetti <b>B</b>ianco/<b>G</b>iallo/<b>R</b>osso, mobile, tempo, aree di tiro, sequenza, note."],
+  ["Verifica automatica distanze", "Ogni distanza è confrontata coi massimi del regolamento della gara: verde conforme, giallo in tolleranza 5% (solo per terreno/sicurezza), rosso oltre. Il rosso PF/Lupetti è verificato contro la metà del massimo tradizionali e non può superare il giallo."],
+  ["Sagome di gruppi diversi", "Con 2\u20133 sagome compaiono le righe Sag. 2/3 con gruppo e distanze proprie: ognuna è verificata contro i limiti del <b>suo</b> gruppo. Controlli automatici: la sagoma designata dev'essere la più distante; niente sagome di gruppo superiore; in Fusion/Track/Target composizione \u201calmeno 2 del gruppo designato + terza del gruppo immediatamente inferiore\u201d."],
+  ["Sequenze di tiro", "Menu con le sole combinazioni ammesse (Cap. V Par. II c): A · AB/BA · ABC/CBA. Una sequenza importata non valida resta visibile con \u26a0 e manda la piazzola in KO."],
+  ["Verifiche ricognizione (13\u201329)", "Dentro ogni piazzola, filtrate per tipo: 18b solo con più sagome, 21·27 solo con area di tiro, 25\u201326 solo per le mobili. \u201cOK su tutte le verifiche mancanti\u201d chiude la piazzola conforme in un tap senza toccare i KO."],
+  ["Import xlsx dalla ASD", "\u201cImporta xlsx ASD\u201d legge il modulo Tabelle Logistiche: riconosce il foglio giusto, mappa le colonne per intestazione (regge le varianti tra i moduli) e lancia subito la verifica su tutte le piazzole."],
+  ["Export xlsx", "Genera la tabella nel formato del modulo ASD, incluse le sagome aggiuntive nelle note."],
+  ["Foto", "Il tasto \ud83d\udcf7 allega foto alla piazzola (ridimensionate, salvate sul dispositivo). Utili per documentare le criticità nel referto."],
+  ["Riepilogo", "In cima: composizione per gruppo confrontata con quella attesa, aree di tiro vs minimo, mobili, piazzole a tempo, stato verifiche e conteggio KO."]
+ ]],
+ ["Registro", [
+  ["Diario", "Annotazioni con orario automatico e pulsanti rapidi (inizio, sospensione, ripresa, fine). Ogni voce può avere foto. Confluisce nella relazione come cronologia."],
+  ["Arcieri — controllo piazzole", "Carica il PDF delle piazzole dell'organizzazione (elenco con turni oppure “Assegnazione piazzole” di Sagitta): per ogni piazzola vedi gli arcieri nell'ordine del file, con compagnia e categoria. Al controllo segni <b>OK/KO su ogni arciere</b>; per i KO indichi il tipo di irregolarità (frecce non segnate, arco o tipologia di tiro non di categoria) e la nota per l'organizzazione. “OK su tutti” chiude in un tap la piazzola conforme. Il riepilogo si copia o condivide e finisce nella relazione."],
+  ["Briefing", "\u201cScaletta standard\u201d genera i punti dal regolamento adattati alla gara; \u201cAppunti dal percorso\u201d importa piazzole a tempo, mobili e note della ricognizione. La mattina tocchi ogni punto mentre lo dici: barra di avanzamento e punti non trattati evidenziati nel referto."],
+  ["Sanzioni", "Registro con escalation ammonizione \u2192 diffida \u2192 squalifica, arciere, piazzola e motivo. Tutto nella relazione con gli orari."],
+  ["Ricorsi", "\u201cClassifica pubblicata ora\u201d avvia il countdown dei 30 minuti e annota l'evento nel diario. Ricorsi per iscritto, decisione inappellabile."],
+  ["Controlli — velocità compound", "Carica l'elenco iscritti in PDF: l'app estrae gli arcieri compound (CO·SL·SI·FS) in ordine alfabetico. Inserisci gli fps misurati: oltre i 300 scatta ✗ OLTRE (squalifica immediata) e l'annotazione automatica nel diario. Arcieri fuori elenco aggiungibili a mano; le irregolarità finiscono nella relazione."],
+  ["Emergenze", "112, responsabile e soccorso a un tap; rilevamento GPS con coordinate da dettare (funziona anche senza rete dati)."]
+ ]],
+ ["Consulta", [
+  ["Schede gara", "Distanze massime per gruppo e categoria, punteggi, prescrizioni chiave e versione 10+10 per tutti i formati outdoor, in linea e indoor."],
+  ["Casistica", "\u201cCosa faccio se\u2026\u201d: 22 casi con risposta secca e riferimento all'articolo, ricercabili."],
+  ["Strumenti", "Gruppo sagoma da misura L/H, verifica distanza singola, calcolatore validità gara (Cap. IV Par. XI), spareggio classifica, regole score, timer di backup con segnali acustici."]
+ ]],
+ ["Referto", [
+  ["Relazione", "Si compone da sola: dati gara, checklist con i KO, anomalie della tabella logistica, briefing, cronologia, sanzioni, controlli, orario classifica. Aggiungi criticità e note, poi copia, condividi o invia a gdgcsain@gmail.com."],
+  ["Archivio", "\u201cArchivia la gara in corso\u201d salva uno snapshot completo riapribile. Export/import JSON per passare le gare tra dispositivi o colleghi (le foto restano sul dispositivo)."],
+  ["Giudici", "Profili con tessera RCT e contatti: il giudice attivo si inserisce da solo nei dati gara e resta impostato tra una gara e l'altra."]
+ ]],
+ ["Installazione e dati", [
+  ["Installazione", "Apri l'app da un indirizzo HTTPS e usa \u201cAggiungi a schermata Home\u201d: da quel momento è un'app a tutti gli effetti, offline compresa."],
+  ["Aggiornamenti", "Quando esce una nuova versione, apri l'app con connessione e ricaricala: la cache si aggiorna da sola."],
+  ["Dove stanno i dati", "Tutto sul dispositivo (localStorage + foto in IndexedDB). Nessun dato viene inviato altrove; l'export JSON è l'unico modo con cui i dati escono, e lo decidi tu."]
+ ]],
+ ["Changelog", [
+  ["v1.12", "Arcieri: esito OK/KO sul singolo arciere. Controlli: solo velocità compound, con import dell'elenco iscritti (CO/SL/SI/FS) e limite 300 fps."],
+  ["v1.11", "Registro → Arcieri: import PDF delle piazzole con i nominativi (elenco a turni e Sagitta), controllo conformità per piazzola con irregolarità e riepilogo per l'organizzazione."],
+  ["v1.10", "Sequenze di tiro: solo combinazioni ammesse (A, AB/BA, ABC/CBA) con verifica sugli import."],
+  ["v1.9", "Sagome di gruppi diversi nella stessa piazzola: distanze per gruppo proprio, coerenza designazione, composizione per gara."],
+  ["v1.8", "Briefing pre-gara: scaletta standard per gara, appunti dal percorso, spunta dei punti trattati."],
+  ["v1.7", "Verifiche ricognizione 13\u201329 spostate sulla singola piazzola, filtrate per tipo."],
+  ["v1.6", "Interfaccia riorganizzata: 5 schede, sotto-sezioni, dati gara richiudibili, strumenti ad accordion."],
+  ["v1.5", "Registro completo (diario, sanzioni, ricorsi, controlli, emergenze), foto, casistica, spareggio."],
+  ["v1.4", "Import/export xlsx della tabella logistica ASD."],
+  ["v1.3", "Profili giudice e archivio gare con export/import JSON."],
+  ["v1.2", "Sezione Piazzole con verifica automatica delle distanze."],
+  ["v1.1", "Prima versione: checklist, schede gara, strumenti, relazione."]
+ ]]
+];
+
+const HGOPEN = {0:true};
+function renderHelp(){
+  const q = normH($('#helpQ').value || '');
+  const box = $('#helpList');
+  box.innerHTML = GUIDE.map(([sec, items], si) => {
+    const flt = items.filter(([t, d]) => !q || normH(t).includes(q) || normH(d.replace(/<[^>]+>/g, '')).includes(q));
+    if (!flt.length) return '';
+    const open = q ? true : !!HGOPEN[si];
+    return `<div class="hg-sec ${open ? '' : 'closed'}" data-hg="${si}">
+      <div class="hg-hd"><h3>${sec}</h3><span class="muted">${flt.length}</span>
+        <svg class="chev2" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="hg-items">${flt.map(([t, d]) =>
+        `<div class="hg-it"><b class="t">${t}</b><span class="muted">${d}</span></div>`).join('')}</div>
+    </div>`;
+  }).join('') || '<div class="empty-hint">Nessun risultato.</div>';
+  box.querySelectorAll('.hg-hd').forEach(h => h.onclick = () => {
+    const sec = h.parentElement, si = sec.dataset.hg;
+    HGOPEN[si] = sec.classList.contains('closed');
+    sec.classList.toggle('closed');
+  });
+}
+$('#helpVer').textContent = APP_VER;
+$('#btnHelp').onclick = () => { $('#helpOv').hidden = false; renderHelp(); };
+$('#helpX').onclick = () => { $('#helpOv').hidden = true; };
+$('#helpQ').oninput = renderHelp;
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#helpOv').hidden) $('#helpOv').hidden = true; });
+</script>
+</body>
+</html>
