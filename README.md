@@ -26,6 +26,18 @@ Le librerie per l'import PDF/xlsx si scaricano al primo utilizzo e poi restano i
 3. Commit e push su GitHub: dopo circa un minuto l'app online è aggiornata.
 4. Sul telefono basta riaprire l'app con connessione: la nuova versione arriva da sola.
 
+## Export XML e punto di scambio
+
+Da **Referto → Relazione → Esporta XML** l'intera gara esce come file XML strutturato
+(dati gara, checklist, tabella logistica con anomalie, controlli arcieri per piazzola,
+velocità compound, sanzioni, briefing, diario e testo della relazione), leggibile da
+qualsiasi altra applicazione.
+
+Da **Referto → Punto di scambio** puoi impostare un indirizzo HTTP a cui inviare l'XML
+con un tasto: l'app fa una `POST` (Content-Type `text/plain`, corpo = XML, nome file nel
+parametro `?nome=`). Funziona con qualsiasi endpoint; per salvare direttamente su Google
+Drive usa lo script pronto in **`punto-scambio-drive.gs`** (istruzioni nel file stesso).
+
 ## Dati
 
 Nessun server: gare, foto e archivio vivono solo nel browser del dispositivo

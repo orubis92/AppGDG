@@ -645,6 +645,7 @@ input[type=number].vel-fps{width:74px; flex:0 0 74px; padding:9px 4px; font-size
       <label class="f">Note finali</label><textarea id="rNote"></textarea>
       <div class="toolbar">
         <button class="btn" id="rGen">Genera relazione</button>
+        <button class="btn sec" id="rXml">Esporta XML</button>
       </div>
     </div>
     <div class="card" id="rOutCard" style="display:none">
@@ -656,6 +657,16 @@ input[type=number].vel-fps{width:74px; flex:0 0 74px; padding:9px 4px; font-size
         <button class="btn ghost" id="rShare">Condividi</button>
         <button class="btn ghost" id="rArch">Archivia gara</button>
       </div>
+    </div>
+    <div class="card">
+      <h2>Punto di scambio</h2>
+      <p class="muted">Invio diretto della relazione in <b>XML</b> a un indirizzo HTTP: uno script che salva su Drive, un webhook o l'endpoint di un'altra applicazione. L'indirizzo resta salvato su questo dispositivo e vale per tutte le gare.</p>
+      <label class="f">URL di destinazione</label>
+      <input type="text" id="upUrl" inputmode="url" autocapitalize="off" placeholder="https://script.google.com/macros/s/…/exec">
+      <div class="toolbar">
+        <button class="btn" id="upSend">Invia relazione XML</button>
+      </div>
+      <div class="res" id="upRes"></div>
     </div>
   <!-- ============ ARCHIVIO ============ -->
   <section class="view" id="v-arch">
@@ -3145,10 +3156,172 @@ buildRel = function(){
 };
 </script>
 <script>
+/* ================== EXPORT XML E PUNTO DI SCAMBIO ================== */
+const xesc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+const xat = o => Object.entries(o).filter(([, v]) => v !== '' && v != null && v !== false).map(([k, v]) => ` ${k}="${xesc(v)}"`).join('');
+
+function buildXml(){
+  const g = pzGara();
+  const A = [];
+  A.push('<?xml version="1.0" encoding="UTF-8"?>');
+  A.push(`<relazioneGdG${xat({app: 'gdg-csain', versioneApp: APP_VER.split(' ')[0], generata: new Date().toISOString()})}>`);
+
+  /* dati gara */
+  A.push(` <gara${xat({tipoId: S.gara.gTipo || '', tipo: g ? g.n + ' ' + g.s : '', data: S.gara.gData || '', localita: S.gara.gLoc || '', asd: S.gara.gAsd || '', ambulanza: S.gara.gAmb || '', partecipanti: S.rel.rPart || '', inizio: S.rel.rIni || '', fine: S.rel.rFine || ''})}>`);
+  const u = (typeof curUser === 'function' && curUser()) || null;
+  A.push(`  <giudice${xat({nome: S.gara.gGdg || '', tessera: u ? u.tess : '', telefono: u ? u.tel : '', email: u ? u.mail : ''})}/>`);
+  A.push(`  <responsabile${xat({nome: S.gara.gResp || '', telefono: S.gara.gTel || ''})}/>`);
+  A.push(' </gara>');
+
+  /* checklist ufficiale */
+  const ckItems = CHECK.flatMap(f => f.items.map(([id, txt]) => ({fase: f.fase, id, txt})));
+  A.push(` <checklist${xat({verificate: ckItems.filter(i => S.check[i.id]).length, totale: ckItems.length})}>`);
+  ckItems.forEach(i => {
+    const st = S.check[i.id] || '';
+    if (st || S.notes[i.id]) A.push(`  <voce${xat({n: i.id, fase: i.fase, esito: st, nota: S.notes[i.id] || ''})}>${xesc(i.txt)}</voce>`);
+  });
+  A.push(' </checklist>');
+
+  /* tabella logistica */
+  if (g){
+    const n = pzCount();
+    const rows = S.pz.slice(0, n);
+    if (rows.some(pzHasData)){
+      A.push(` <tabellaLogistica${xat({formato: S.pzMode === '10' ? '10+10' : '20'})}>`);
+      rows.forEach((p, i) => {
+        if (!pzHasData(p)) return;
+        const v = pzValidate(p);
+        A.push(`  <piazzola${xat({n: i + 1, gruppo: p.gr, sagome: p.nsag, tipologia: p.tip, produttore: p.prod, mobile: p.mob ? 'si' : '', tempoLimitato: p.tempo ? 'si' : '', distB: p.b, distG: p.g, distR: p.r, dist: p.d, areaTecno: p.areaTec ? 'si' : '', areaTrad: p.areaTrad ? 'si' : '', sequenza: p.seq, stato: v.st, nota: p.note})}>`);
+        v.alerts.filter(a => a.t !== 'ok').forEach(a => A.push(`   <anomalia${xat({livello: a.t})}>${xesc(a.msg)}</anomalia>`));
+        A.push('  </piazzola>');
+      });
+      A.push(' </tabellaLogistica>');
+    }
+  }
+
+  /* controlli di piazzola in gara */
+  if (S.iscr){
+    A.push(` <controlliPiazzole${xat({fonte: S.iscr.fonte || ''})}>`);
+    S.iscr.turni.forEach(t => {
+      const arcs = t.pz.flatMap(p => p.arcieri);
+      A.push(`  <turno${xat({n: t.n, arcieri: arcs.length, controllati: arcs.filter(a => a.st).length})}>`);
+      t.pz.forEach(p => {
+        A.push(`   <piazzola${xat({n: p.n, campo: p.campo || ''})}>`);
+        p.arcieri.forEach(a => {
+          A.push(`    <arciere${xat({nome: a.nome, compagnia: a.comp, categoria: a.cat, posto: a.let || '', pettorale: a.pett || '', esito: a.st === 'OK' ? 'conforme' : a.st === 'KO' ? 'irregolare' : '', nota: a.note || ''})}>`);
+          (a.irr || []).forEach(id => A.push(`     <irregolarita${xat({tipo: id})}>${xesc(iscrIrrLabel(id))}</irregolarita>`));
+          A.push('    </arciere>');
+        });
+        A.push('   </piazzola>');
+      });
+      A.push('  </turno>');
+    });
+    A.push(' </controlliPiazzole>');
+  }
+
+  /* controllo velocità compound */
+  if (S.vel && S.vel.list.length){
+    A.push(` <velocitaCompound${xat({limiteFps: VELMAX, categorie: VELCATS.join(','), fonte: S.vel.fonte || ''})}>`);
+    S.vel.list.forEach(v => {
+      const e2 = velEsito(v);
+      A.push(`  <arciere${xat({nome: v.nome, compagnia: v.comp, categoria: v.cat, fps: v.fps, esito: e2 === 'ko' ? 'oltreLimite' : e2 === 'ok' ? 'regolare' : ''})}/>`);
+    });
+    A.push(' </velocitaCompound>');
+  }
+
+  /* sanzioni */
+  A.push(' <sanzioni>');
+  (S.sanz || []).forEach(s => A.push(`  <sanzione${xat({orario: hhmm(s.ts), tipo: s.tipo, arciere: s.arc, piazzola: s.pz, motivo: s.mot})}/>`));
+  A.push(' </sanzioni>');
+
+  /* briefing */
+  if ((S.brief || []).length){
+    A.push(` <briefing${xat({trattati: S.brief.filter(b => b.done).length, totale: S.brief.length})}>`);
+    S.brief.forEach(b => A.push(`  <punto${xat({trattato: b.done ? 'si' : 'no'})}>${xesc(b.txt)}</punto>`));
+    A.push(' </briefing>');
+  }
+
+  /* diario */
+  if ((S.diario || []).length){
+    A.push(' <diario>');
+    S.diario.forEach(d => A.push(`  <evento${xat({orario: hhmm(d.ts)})}>${xesc(d.txt)}</evento>`));
+    A.push(' </diario>');
+  }
+  if (S.classificaTs) A.push(` <classifica${xat({pubblicata: hhmm(S.classificaTs), termineRicorsi: hhmm(S.classificaTs + 30 * 60000)})}/>`);
+
+  /* relazione discorsiva */
+  A.push(` <relazione${xat({controlloMateriali: S.rel.rMat || '', piazzoleAnnullate: S.rel.rAnn || '', sanzioni: S.rel.rSanz || '', premiazioni: S.rel.rPrem || ''})}>`);
+  if (S.rel.rCrit) A.push(`  <criticita>${xesc(S.rel.rCrit)}</criticita>`);
+  if (S.rel.rNote) A.push(`  <note>${xesc(S.rel.rNote)}</note>`);
+  A.push(`  <testo><![CDATA[${buildRel().replace(/\]\]>/g, ']]]]><![CDATA[>')}]]></testo>`);
+  A.push(' </relazione>');
+  A.push('</relazioneGdG>');
+  return A.join('\n');
+}
+function xmlName(){
+  const g = pzGara();
+  const base = ('relazione-' + (g ? g.n + '-' + g.s : 'gara') + '-' + (S.gara.gData || 'senza-data'))
+    .toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-');
+  return base + '.xml';
+}
+$('#rXml').onclick = async () => {
+  const xml = buildXml();
+  const name = xmlName();
+  const blob = new Blob([xml], {type: 'application/xml'});
+  const file = new File([blob], name, {type: 'application/xml'});
+  if (navigator.canShare && navigator.canShare({files: [file]})){
+    try{ await navigator.share({files: [file], title: name}); return; }catch(e){ if (e && e.name === 'AbortError') return; }
+  }
+  const url = URL.createObjectURL(blob);
+  const el = document.createElement('a');
+  el.href = url; el.download = name; el.click();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+};
+
+/* --- punto di scambio: POST configurabile --- */
+const UPKEY = 'gdg-upcfg';
+let UPCFG = JSON.parse(localStorage.getItem(UPKEY) || '{}');
+$('#upUrl').value = UPCFG.url || '';
+$('#upUrl').oninput = () => { UPCFG.url = $('#upUrl').value.trim(); localStorage.setItem(UPKEY, JSON.stringify(UPCFG)); };
+$('#upSend').onclick = async () => {
+  const r = $('#upRes');
+  const url = (UPCFG.url || '').trim();
+  if (!/^https?:\/\//i.test(url)){
+    r.className = 'res show bad'; r.textContent = 'Indica prima un indirizzo valido (https://…).'; return;
+  }
+  const xml = buildXml();
+  const name = xmlName();
+  const dest = url + (url.includes('?') ? '&' : '?') + 'nome=' + encodeURIComponent(name);
+  r.className = 'res show neutral'; r.textContent = 'Invio in corso…';
+  try{
+    const res = await fetch(dest, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: xml, redirect: 'follow'});
+    if (res.ok){
+      r.className = 'res show good';
+      r.innerHTML = `<span class="big">INVIATA ✓</span>${esc(name)} consegnata al punto di scambio.`;
+      addDiario(`Relazione XML "${name}" inviata al punto di scambio`);
+    } else {
+      r.className = 'res show bad';
+      r.textContent = `Il punto di scambio ha risposto ${res.status}: controlla indirizzo e permessi.`;
+    }
+  }catch(e){
+    /* server senza CORS: invio "alla cieca" (la risposta non è leggibile dall'app) */
+    try{
+      await fetch(dest, {method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: xml});
+      r.className = 'res show neutral';
+      r.innerHTML = `<span class="big">INVIATA (senza conferma)</span>Il server non espone CORS, quindi l'app non può leggere la risposta: verifica sul punto di scambio che <b>${esc(name)}</b> sia arrivata.`;
+      addDiario(`Relazione XML "${name}" inviata al punto di scambio (senza conferma di ricezione)`);
+    }catch(e2){
+      r.className = 'res show bad';
+      r.textContent = 'Invio non riuscito: indirizzo non raggiungibile o nessuna connessione.';
+    }
+  }
+};
+</script>
+<script>
 /* ================== GUIDA D'USO ==================
    Da aggiornare a ogni modifica: incrementa APP_VER (allineata alla cache del
    service worker) e aggiungi la voce in cima al Changelog. */
-const APP_VER = 'v1.12 · luglio 2026';
+const APP_VER = 'v1.13 · luglio 2026';
 
 const GUIDE = [
  ["Panoramica", [
@@ -3189,6 +3362,8 @@ const GUIDE = [
  ]],
  ["Referto", [
   ["Relazione", "Si compone da sola: dati gara, checklist con i KO, anomalie della tabella logistica, briefing, cronologia, sanzioni, controlli, orario classifica. Aggiungi criticità e note, poi copia, condividi o invia a gdgcsain@gmail.com."],
+  ["Esporta XML", "“Esporta XML” genera l'intera gara in formato XML strutturato e documentato (dati, checklist, piazzole, controlli arcieri, velocità compound, sanzioni, diario, testo della relazione): leggibile da qualsiasi altra applicazione o gestionale."],
+  ["Punto di scambio", "Imposti una volta l'indirizzo HTTP di destinazione (es. lo script Google che salva su Drive, o l'endpoint di un altro sistema) e con “Invia relazione XML” la gara viene consegnata direttamente da telefono. L'invio viene annotato nel diario."],
   ["Archivio", "\u201cArchivia la gara in corso\u201d salva uno snapshot completo riapribile. Export/import JSON per passare le gare tra dispositivi o colleghi (le foto restano sul dispositivo)."],
   ["Giudici", "Profili con tessera RCT e contatti: il giudice attivo si inserisce da solo nei dati gara e resta impostato tra una gara e l'altra."]
  ]],
@@ -3198,6 +3373,7 @@ const GUIDE = [
   ["Dove stanno i dati", "Tutto sul dispositivo (localStorage + foto in IndexedDB). Nessun dato viene inviato altrove; l'export JSON è l'unico modo con cui i dati escono, e lo decidi tu."]
  ]],
  ["Changelog", [
+  ["v1.13", "Referto: export della gara in XML strutturato e invio diretto a un punto di scambio HTTP configurabile (Drive via Apps Script, webhook, altre app)."],
   ["v1.12", "Arcieri: esito OK/KO sul singolo arciere. Controlli: solo velocità compound, con import dell'elenco iscritti (CO/SL/SI/FS) e limite 300 fps."],
   ["v1.11", "Registro → Arcieri: import PDF delle piazzole con i nominativi (elenco a turni e Sagitta), controllo conformità per piazzola con irregolarità e riepilogo per l'organizzazione."],
   ["v1.10", "Sequenze di tiro: solo combinazioni ammesse (A, AB/BA, ABC/CBA) con verifica sugli import."],
