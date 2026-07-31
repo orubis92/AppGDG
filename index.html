@@ -1347,6 +1347,25 @@ function pzValidate(p){
   return {st: worst || 'ok', alerts: A};
 }
 
+/* la piazzola è "controllata" solo con i dati minimi inseriti e tutte le verifiche di ricognizione segnate */
+function pzComplete(p){
+  const g = pzGara(); if (!g) return false;
+  const cfg = PZCFG[g.id] || {};
+  if (!p.gr) return false;
+  if (cfg.linea){
+    if (g.dist.lineamaxT ? (p.b === '' || p.g === '') : p.d === '') return false;
+  } else if (p.mob){
+    if (p.d === '') return false;
+  } else {
+    if (p.b === '' && p.g === '') return false;
+  }
+  if (!cfg.linea && typeof pzChkFor === 'function'){
+    const items = pzChkFor(p);
+    if (items.some(([id]) => !(p.chk || {})[id])) return false;
+  }
+  return true;
+}
+
 function pzAlertsHtml(v){
   return v.alerts.length ? `<div class="pz-alerts">${v.alerts.map(a =>
     `<div class="pz-al ${a.t}">${a.t === 'ko' ? '✗ ' : a.t === 'tol' ? '⚠ ' : 'ℹ '}${esc(a.msg)}</div>`).join('')}</div>` : '';
@@ -1374,7 +1393,7 @@ function pzHead(p, i){
       const items = pzChkFor(p); const done = items.filter(([id]) => (p.chk||{})[id]).length;
       return `<span class="pz-chkcnt ${done === items.length ? 'full' : ''}">${done}/${items.length}</span>`;
     })() : ''}
-    <span class="pz-st ${v.st === 'empty' || v.st === 'ok' && !p.gr ? '' : v.st}"></span>`;
+    <span class="pz-st ${v.st === 'ko' ? 'ko' : v.st === 'tol' ? 'tol' : (v.st === 'ok' && pzComplete(p) ? 'ok' : '')}"></span>`;
 }
 
 function renderPzTop(){
@@ -1454,6 +1473,9 @@ function renderPzSummary(){
       <span class="val ${vk ? 'bad' : (vd === vt ? 'good' : '')}">${vd} / ${vt}${vk ? ' · ' + vk + ' KO' : ''}</span></div>`;
   }
   h += `<div class="sum-row"><span>Compilate</span><span class="val">${fatte} / ${n}</span></div>`;
+  const controllate = rows.filter(p => pzValidate(p).st === 'ok' && pzComplete(p)).length;
+  h += `<div class="sum-row"><span>Controllate e conformi <span class="muted">(semaforo verde)</span></span>
+    <span class="val ${controllate === n ? 'good' : ''}">${controllate} / ${n}</span></div>`;
   if (ko) h += `<div class="ko-flag" style="margin-top:8px">✗ ${ko} piazzola/e NON conformi — righe con pallino rosso.</div>`;
   else if (tol) h += `<div class="pz-al tol" style="margin-top:8px">⚠ ${tol} piazzola/e in tolleranza 5% — ammesso solo per terreno/sicurezza.</div>`;
   box.innerHTML = h;
@@ -3321,7 +3343,7 @@ $('#upSend').onclick = async () => {
 /* ================== GUIDA D'USO ==================
    Da aggiornare a ogni modifica: incrementa APP_VER (allineata alla cache del
    service worker) e aggiungi la voce in cima al Changelog. */
-const APP_VER = 'v1.13 · luglio 2026';
+const APP_VER = 'v1.14 · luglio 2026';
 
 const GUIDE = [
  ["Panoramica", [
@@ -3337,7 +3359,8 @@ const GUIDE = [
  ]],
  ["Piazzole", [
   ["Tabella logistica", "Selezionato il tipo di gara, si generano 20 piazzole (o 10+10 col selettore). Per ciascuna: gruppo, n° sagome, tipologia, produttore, distanze picchetti <b>B</b>ianco/<b>G</b>iallo/<b>R</b>osso, mobile, tempo, aree di tiro, sequenza, note."],
-  ["Verifica automatica distanze", "Ogni distanza è confrontata coi massimi del regolamento della gara: verde conforme, giallo in tolleranza 5% (solo per terreno/sicurezza), rosso oltre. Il rosso PF/Lupetti è verificato contro la metà del massimo tradizionali e non può superare il giallo."],
+  ["Verifica automatica distanze", "Ogni distanza è confrontata coi massimi del regolamento della gara: giallo in tolleranza 5% (solo per terreno/sicurezza), rosso oltre il limite. Il rosso PF/Lupetti è verificato contro la metà del massimo tradizionali e non può superare il giallo."],
+  ["Semaforo di piazzola", "Il pallino diventa <b>verde solo a controllo completato</b>: gruppo e distanze inseriti e tutte le verifiche di ricognizione segnate, senza esiti KO. Finché mancano dati o verifiche resta grigio (piazzola da completare); giallo = in tolleranza, rosso = non conforme."],
   ["Sagome di gruppi diversi", "Con 2\u20133 sagome compaiono le righe Sag. 2/3 con gruppo e distanze proprie: ognuna è verificata contro i limiti del <b>suo</b> gruppo. Controlli automatici: la sagoma designata dev'essere la più distante; niente sagome di gruppo superiore; in Fusion/Track/Target composizione \u201calmeno 2 del gruppo designato + terza del gruppo immediatamente inferiore\u201d."],
   ["Sequenze di tiro", "Menu con le sole combinazioni ammesse (Cap. V Par. II c): A · AB/BA · ABC/CBA. Una sequenza importata non valida resta visibile con \u26a0 e manda la piazzola in KO."],
   ["Verifiche ricognizione (13\u201329)", "Dentro ogni piazzola, filtrate per tipo: 18b solo con più sagome, 21·27 solo con area di tiro, 25\u201326 solo per le mobili. \u201cOK su tutte le verifiche mancanti\u201d chiude la piazzola conforme in un tap senza toccare i KO."],
@@ -3373,6 +3396,7 @@ const GUIDE = [
   ["Dove stanno i dati", "Tutto sul dispositivo (localStorage + foto in IndexedDB). Nessun dato viene inviato altrove; l'export JSON è l'unico modo con cui i dati escono, e lo decidi tu."]
  ]],
  ["Changelog", [
+  ["v1.14", "Piazzole: semaforo verde solo a controllo completato (dati inseriti + verifiche ricognizione segnate); senza dati il pallino resta grigio."],
   ["v1.13", "Referto: export della gara in XML strutturato e invio diretto a un punto di scambio HTTP configurabile (Drive via Apps Script, webhook, altre app)."],
   ["v1.12", "Arcieri: esito OK/KO sul singolo arciere. Controlli: solo velocità compound, con import dell'elenco iscritti (CO/SL/SI/FS) e limite 300 fps."],
   ["v1.11", "Registro → Arcieri: import PDF delle piazzole con i nominativi (elenco a turni e Sagitta), controllo conformità per piazzola con irregolarità e riepilogo per l'organizzazione."],

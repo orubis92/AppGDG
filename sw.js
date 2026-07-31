@@ -1,6 +1,6 @@
 /* Service worker GdG CSAIN — offline + aggiornamenti.
    A OGNI NUOVA VERSIONE dell'app: incrementa CACHE (allineata ad APP_VER in index.html). */
-const CACHE = 'gdg-csain-v1.13';
+const CACHE = 'gdg-csain-v1.14';
 
 const SHELL = [
   './',
