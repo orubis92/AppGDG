@@ -466,8 +466,8 @@ input[type=number].vel-fps{width:74px; flex:0 0 74px; padding:9px 4px; font-size
     </div>
 
     <div class="card" data-lsec="ctr">
-      <h2>Controllo velocità compound</h2>
-      <p class="muted">Limite <b>300 fps</b> (cronotachigrafo a 1,5–2 m): oltre il limite scatta la <b>squalifica immediata</b>. Carica l'elenco iscritti dell'organizzazione: estraggo gli arcieri delle categorie compound (CO · SL · SI · FS) in ordine alfabetico.</p>
+      <h2>Controllo compound — velocità e carico</h2>
+      <p class="muted">CO · SL · SI: max <b>300 fps</b> al cronotachigrafo (1,50 m dalla linea) — oltre: <b>squalifica immediata</b>. FS: esente dai 300 fps ma max <b>60 lb al picco</b> — se il superamento è rilevato prima della gara l'arciere può adeguarsi, se rilevato durante o dopo scatta la <b>squalifica</b> (Reg. 6.6). Carica l'elenco iscritti: estraggo i compound in ordine alfabetico.</p>
       <div class="toolbar" style="margin-top:0">
         <button class="btn small" id="velImp">Carica PDF iscritti</button>
         <button class="btn ghost small" id="velClr" style="display:none">Svuota</button>
@@ -477,6 +477,7 @@ input[type=number].vel-fps{width:74px; flex:0 0 74px; padding:9px 4px; font-size
       <label class="f">Aggiungi arciere fuori elenco</label>
       <div style="display:flex; gap:8px">
         <input type="text" id="velNome" placeholder="Nome e cognome" style="flex:1">
+        <select id="velCat" style="width:76px"><option>CO</option><option>SL</option><option>SI</option><option>FS</option></select>
         <button class="btn" id="velAdd">＋</button>
       </div>
     </div>
@@ -523,7 +524,7 @@ input[type=number].vel-fps{width:74px; flex:0 0 74px; padding:9px 4px; font-size
   <section class="view" id="v-reg">
     <div id="regIndex">
       <div class="card"><h2>Schede gara</h2>
-        <p class="muted">Distanze massime, punteggi e prescrizioni chiave per ogni formato. Fonte: Regolamento Gare Outdoor 2026 rev. 5.0 e Indoor 2026 rev. 2.0.</p>
+        <p class="muted">Distanze massime, punteggi e prescrizioni chiave per ogni formato. Fonte: Regolamento Sportivo 3D rev. 6.6 (in vigore 01/07/2026) e Regolamento Gare.</p>
       </div>
       <div class="gara-grid" id="regGrid"></div>
       <div class="sp"></div>
@@ -835,12 +836,12 @@ const GARE = [
    "Semaforo/monitor: 90″ per 2 frecce, 60″ per 1."],
   v1010:"Corsie 10+10: G1×1, G2×1, G3×6, G4×2 · tra i due giri l'organizzazione modifica le distanze dei bersagli."},
  {id:"rt40o", n:"40", s:"3D Round&Trophy", amb:"linea-out", frecce:"Round 40 + Trophy 20 frecce · 20 corsie",
-  dist:{lineamaxT:[40,40,30], lineamaxTr:[32,32,20], lineamin:"22 (dalla linea tecnologici) · max 40", corsie:[4,4,12], corsie1010:[2,2,6]},
+  dist:{lineamaxT:[40,40,30], lineamaxTr:[30,30,20], lineamin:"22 (dalla linea tecnologici) · max 40", corsie:[4,4,12], corsie1010:[2,2,6]},
   pf:"linea rossa 5 m avanzata rispetto ai tradizionali",
   pts:[["Round 1ª",[["Perfect",14],["Super Spot",12],["Spot",10],["Sagoma",6]]],
        ["Round 2ª",[["Perfect",12],["Super Spot",10],["Spot",8],["Sagoma",4]]],
        ["Trophy (unica)",[["Perfect",26],["Super Spot",22],["Spot",18],["Sagoma",12]]]], max:1040,
-  note:["Solo gruppi 1–2–3. Due linee di tiro: BIANCA max 40 m (CO/SL/SI/FS/RI) e GIALLA 8 m più avanzata (AN/RT/RM/AS/LB).",
+  note:["Solo gruppi 1–2–3. Due linee di tiro: BIANCA max 40 m (CO/SL/SI/FS/RI) e GIALLA 10 m più avanzata (AN/RT/RM/AS/LB).",
    "Campo min 20×50 m per 20 corsie (outdoor).",
    "Round: 2 frecce per corsia (max 520). Trophy: 1 freccia (max 520).",
    "Semaforo/monitor: 90″ per 2 frecce, 60″ per 1."],
@@ -867,12 +868,12 @@ const GARE = [
    "Visuali con linea di ingombro sagoma, un solo spot/superspot/perfect; evidenziare le linee valide se stampate multiple."],
   v1010:"Come 25 3D Round&Trophy."},
  {id:"rt40i", n:"40", s:"3D R&T Indoor", amb:"in", frecce:"Round 40 + Trophy 20 frecce",
-  dist:{lineamaxT:[40,40,30], lineamaxTr:[32,32,20], lineamin:"22 (linea tecnologici) · max 40", corsie:[4,4,12], corsie1010:[2,2,6]},
+  dist:{lineamaxT:[40,40,30], lineamaxTr:[30,30,20], lineamin:"22 (linea tecnologici) · max 40", corsie:[4,4,12], corsie1010:[2,2,6]},
   pf:"linea rossa 5 m avanzata",
   pts:[["Round 1ª",[["Perfect",14],["Super Spot",12],["Spot",10],["Sagoma",6]]],
        ["Round 2ª",[["Perfect",12],["Super Spot",10],["Spot",8],["Sagoma",4]]],
        ["Trophy (unica)",[["Perfect",26],["Super Spot",22],["Spot",18],["Sagoma",12]]]], max:1040,
-  note:["Struttura min 20×40 m · due linee: BIANCA max 40 m e GIALLA +8 m avanzata.",
+  note:["Struttura min 20×40 m · due linee: BIANCA max 40 m e GIALLA +10 m avanzata.",
    "Solo gruppi 1–2–3.",
    "Battifreccia dietro ogni bersaglio + rete di fondo h ≥3 m."],
   v1010:"Corsie 10+10: G1×2, G2×2, G3×6."}
@@ -1280,7 +1281,7 @@ function pzValidate(p){
       const dv = p.d || p.g || p.b;
       const sD = dstState(dv, mm);
       if (sD){ bump(sD); if (sD !== 'ok') A.push({t:sD, msg:`Mobile ${dv} m vs max ${mm} m (tutte le categorie)`}); }
-      A.push({t:'ok', msg:'Carrello: velocità max 2 m/s · finestra ≥2,5 m · angolo ≤30° · cavo acciaio Ø ≥6 mm'});
+      A.push({t:'ok', msg:'Carrello: velocità max 2 m/s · finestra ≥2,5 m · angolo ≤30° · manovratore: organizzatore o atleta maggiorenne'});
     }
   } else {
     const maxG = g.dist.trad[gi], maxB = g.dist.tech[gi];
@@ -1336,7 +1337,7 @@ function pzValidate(p){
     }
     if (p.tempo){
       const t = g.id === 'tg60' ? '30″ da 3 picchetti · 25″ da picchetto unico' : '25″ per 2 frecce';
-      A.push({t:'ok', msg:`Tempo limitato: ${t} · esenti tecnologici/RI/AN, Prime Frecce e Lupetti`});
+      A.push({t:'ok', msg:`Tempo limitato: ${t} · esenti tecnologici/RI/AN, Prime Frecce e Lupetti · estensione max +10″ solo per sicurezza`});
     }
   }
   if (!cfg.linea && p.chk && typeof PZCHK !== 'undefined'){
@@ -2248,9 +2249,11 @@ function velParseElenco(pages){
   }));
   return out;
 }
+/* FS: esente dai 300 fps, limite di carico 60 lb al picco (Reg. 6.6) */
+function velLim(v){ return v.cat === 'FS' ? {max: 60, un: 'lb'} : {max: VELMAX, un: 'fps'}; }
 function velEsito(v){
   if (v.fps === '' || v.fps == null || isNaN(parseFloat(v.fps))) return null;
-  return parseFloat(v.fps) > VELMAX ? 'ko' : 'ok';
+  return parseFloat(v.fps) > velLim(v).max ? 'ko' : 'ok';
 }
 $('#velImp').onclick = () => $('#velFile').click();
 $('#velFile').onchange = async () => {
@@ -2296,7 +2299,7 @@ $('#velAdd').onclick = () => {
   const nome = $('#velNome').value.trim();
   if (!nome){ alert('Indica nome e cognome.'); return; }
   S.vel = S.vel || {fonte: '', list: []};
-  S.vel.list.push({nome: nome.toUpperCase(), comp: '', cat: '', fps: '', man: true});
+  S.vel.list.push({nome: nome.toUpperCase(), comp: '', cat: $('#velCat').value, fps: '', man: true});
   S.vel.list.sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
   $('#velNome').value = '';
   save(); renderVel();
@@ -2325,7 +2328,7 @@ function renderVel(){
         <div class="l2">${esc(v.comp) || '&nbsp;'}</div>
       </div>
       <span class="ar-cat">${esc(v.cat)}</span>
-      <input type="number" class="vel-fps" inputmode="decimal" placeholder="fps" data-vfps="${i}" value="${esc(v.fps)}">
+      <input type="number" class="vel-fps" inputmode="decimal" placeholder="${velLim(v).un}" data-vfps="${i}" value="${esc(v.fps)}">
       <span class="vel-esito ${est === 'ko' ? 'bad' : est === 'ok' ? 'good' : 'mut'}" data-vest="${i}">${est === 'ko' ? '✗ OLTRE' : est === 'ok' ? '✓ regolare' : '—'}</span>
       ${v.man ? `<button class="icon-btn" data-vdel="${i}" aria-label="Elimina" style="width:32px;height:32px;font-size:.85rem">🗑</button>` : ''}
     </div>`;
@@ -2346,7 +2349,8 @@ function renderVel(){
       const v = S.vel.list[+inp.dataset.vfps];
       if (velEsito(v) === 'ko' && !v.warned){
         v.warned = true; save();
-        addDiario(`Controllo velocità: ${v.nome}${v.cat ? ' (' + v.cat + ')' : ''} ${v.fps} fps > ${VELMAX} fps — squalifica immediata`);
+        const L = velLim(v);
+        addDiario(`Controllo ${L.un === 'lb' ? 'carico' : 'velocità'}: ${v.nome}${v.cat ? ' (' + v.cat + ')' : ''} ${v.fps} ${L.un} > ${L.max} ${L.un} — ${L.un === 'lb' ? 'oltre il limite: squalifica se rilevato in gara' : 'squalifica immediata'}`);
       }
     };
   });
@@ -2410,8 +2414,8 @@ buildRel = function(){
   if (S.vel && S.vel.list.length){
     const meas = S.vel.list.filter(v => velEsito(v));
     const ko = S.vel.list.filter(v => velEsito(v) === 'ko');
-    B.push(`\nCONTROLLO VELOCIT\u00c0 COMPOUND (${VELCATS.join('/')}, limite ${VELMAX} fps): ${meas.length}/${S.vel.list.length} misurati${ko.length ? '' : (meas.length ? ' \u2014 tutti regolari' : '')}`);
-    ko.forEach(v => B.push(`  \u2717 ${v.nome}${v.cat ? ' (' + v.cat + ')' : ''}: ${v.fps} fps oltre il limite \u2192 squalifica immediata`));
+    B.push(`\nCONTROLLO COMPOUND (CO/SL/SI max ${VELMAX} fps \u00b7 FS max 60 lb al picco): ${meas.length}/${S.vel.list.length} misurati${ko.length ? '' : (meas.length ? ' \u2014 tutti regolari' : '')}`);
+    ko.forEach(v => { const L = velLim(v); B.push(`  \u2717 ${v.nome}${v.cat ? ' (' + v.cat + ')' : ''}: ${v.fps} ${L.un} oltre il limite di ${L.max} ${L.un}${L.un === 'fps' ? ' \u2192 squalifica immediata' : ' \u2192 squalifica se rilevato in gara'}`); });
   }
   if (S.classificaTs)
     B.push(`\nClassifica pubblicata alle ${hhmm(S.classificaTs)} \u2014 termine ricorsi ${hhmm(S.classificaTs + 30*60000)}.`);
@@ -2437,7 +2441,14 @@ const CAS = [
  ["Arciere supera la tabella o si avvicina al bersaglio","Non \u00e8 consentito avvicinarsi al bersaglio o superare i picchetti finch\u00e9 tutta la squadra non ha tirato: punteggio della piazzola annullato, recidivi squalificati.","Cap. IV Par. VI.4"],
  ["Bersaglio o frecce toccati prima della registrazione","N\u00e9 il bersaglio n\u00e9 le frecce vanno toccati finch\u00e9 tutti i punti sono registrati: il punteggio dell\u2019arciere inadempiente viene annullato. Freccia sotto la sagoma: il responsabile pu\u00f2 muovere leggermente la sagoma solo dopo la registrazione delle altre frecce.","Cap. IV Par. VI.11"],
  ["Freccia senza anelli o senza nome/tessera","Le frecce senza anelli di riferimento non acquisiscono punteggio; senza riconoscimento scritto sull\u2019asta la freccia non \u00e8 valida (\u00e8 possibile rendere riconoscibili le aste durante la gara). Diametro max asta/punta 9,4 mm.","Cap. III Par. I"],
- ["Velocit\u00e0 frecce oltre 300 fps","Squalifica immediata dell\u2019arciere. Rilevamento con cronotachigrafo a 1,5\u20132 m, prima e/o durante la gara a discrezione dei GdG.","Cap. III Par. I.7-8 e Par. II"],
+ ["Velocit\u00e0 frecce oltre 300 fps","Squalifica immediata dell\u2019arciere. Il limite vale per tutte le categorie ESCLUSA FS, che ha invece un limite di carico di 60 lb al picco. Rilevamento con cronotachigrafo posto a 1,50 m dalla linea di tiro, prima e/o durante la gara a discrezione dei GdG.","Cap. III Par. I.7-8 e Par. II"],
+ ["Carico dell\u2019arco oltre il limite","La verifica del carico (classi giovanili e categoria FS, max 60 lb al picco) pu\u00f2 avvenire prima, durante o dopo la gara: se il superamento \u00e8 rilevato prima dell\u2019inizio l\u2019arciere pu\u00f2 adeguare l\u2019attrezzatura; se rilevato durante o al termine scatta la squalifica.","Cap. III Par. II"],
+ ["Telemetri, distanze comunicate, fotocamere","\u00c8 vietato usare strumenti di rilevazione o stima delle distanze e trasmettere o comunicare con qualsiasi mezzo informazioni su distanze o caratteristiche dei tiri. Fotocamere ammesse solo senza scale graduate. Violazione: ammonizione immediata; recidiva: squalifica.","Cap. IV Par. V.16"],
+ ["Freccia prima del via o oltre il tempo (gare in linea)","Annullamento del punteggio dell\u2019intera vol\u00e9e. Alla prima infrazione richiamo ufficiale, alla seconda squalifica.","Cap. VI Par. IV.3"],
+ ["Guasto attrezzatura nelle gare in linea","La gara non si interrompe: l\u2019arciere, con il consenso del GdG, pu\u00f2 lasciare la linea ed eventualmente il campo, rientrare, ma non recupera i tiri non eseguiti. L\u2019arco rotto si sostituisce con uno della stessa categoria.","Cap. VI Par. IV.6 e Par. V.5"],
+ ["Correzione di categoria/stile sullo score","Ogni correzione di Categoria/Stile sullo score rispetto a quanto dichiarato all\u2019iscrizione deve essere verificata dal Giudice di Gara prima dell\u2019avvio della gara o delle premiazioni.","Cap. IV Par. VII.9"],
+ ["Chi si premia e come","Premiazione obbligatoria al termine della competizione: a discrezione dell\u2019organizzatore si premiano solo classi/categorie con almeno 3 partecipanti, ma Prime Frecce e Lupetti si premiano sempre. Chiamata dal 3\u00b0 classificato (classe, categoria, posizione e punteggio, societ\u00e0, nome); solo il vincitore sale sul podio; obbligatorio un sistema di riconoscimento dei primi tre.","Cap. IV Par. VIII"],
+ ["Due percorsi in linea in contemporanea","Vanno designati due Giudici di Gara, uno per percorso. Il Direttore di Tiro segnala inizio e fine di ogni turno; il GdG pu\u00f2 interrompere le sequenze o azzerare i tempi in anticipo.","Cap. VI Par. VI"],
  ["Errore in piazzola a tempo limitato","Qualsiasi errore o irregolarit\u00e0 nella sequenza annulla l\u2019intera serie (eccetto categorie AN, RI, CO, SL, SI, FS). Interruzione per motivi di sicurezza non imputabili: si riprende con il tempo residuo. Trazione incompleta o punto di rilascio variato: serie annullata; con punteggio zero scatta l\u2019ammonizione.","Cap. V Par. IV"],
  ["Maltempo o sospensione della gara","GdG e/o Presidente ASD possono sospendere: 1 segnale acustico = sospensione temporanea, un ulteriore segnale = ripresa, 3 segnali = sospensione definitiva con ritorno al ritrovo. Sospensione definitiva: gara valida solo con almeno 12 piazzole completate da tutte le squadre, altrimenti declassata ad amichevole.","Cap. V Par. I k · Cap. IV Par. XI"],
  ["Aggressioni verbali o insulti","Sanzionati con l\u2019immediata squalifica, verso chiunque siano rivolti. Segnalazioni e lamentele vanno presentate al GdG nei modi dovuti.","Cap. IV Par. I.5"],
@@ -3241,14 +3252,15 @@ function buildXml(){
     A.push(' </controlliPiazzole>');
   }
 
-  /* controllo velocità compound */
+  /* controllo compound: velocità (CO/SL/SI) e carico (FS) */
   if (S.vel && S.vel.list.length){
-    A.push(` <velocitaCompound${xat({limiteFps: VELMAX, categorie: VELCATS.join(','), fonte: S.vel.fonte || ''})}>`);
+    A.push(` <controlloCompound${xat({limiteFps: VELMAX, limiteLbFS: 60, categorie: VELCATS.join(','), fonte: S.vel.fonte || ''})}>`);
     S.vel.list.forEach(v => {
       const e2 = velEsito(v);
-      A.push(`  <arciere${xat({nome: v.nome, compagnia: v.comp, categoria: v.cat, fps: v.fps, esito: e2 === 'ko' ? 'oltreLimite' : e2 === 'ok' ? 'regolare' : ''})}/>`);
+      const L = velLim(v);
+      A.push(`  <arciere${xat({nome: v.nome, compagnia: v.comp, categoria: v.cat, misura: v.fps, unita: L.un, limite: L.max, esito: e2 === 'ko' ? 'oltreLimite' : e2 === 'ok' ? 'regolare' : ''})}/>`);
     });
-    A.push(' </velocitaCompound>');
+    A.push(' </controlloCompound>');
   }
 
   /* sanzioni */
@@ -3343,7 +3355,7 @@ $('#upSend').onclick = async () => {
 /* ================== GUIDA D'USO ==================
    Da aggiornare a ogni modifica: incrementa APP_VER (allineata alla cache del
    service worker) e aggiungi la voce in cima al Changelog. */
-const APP_VER = 'v1.14 · luglio 2026';
+const APP_VER = 'v1.15 · agosto 2026';
 
 const GUIDE = [
  ["Panoramica", [
@@ -3375,7 +3387,7 @@ const GUIDE = [
   ["Briefing", "\u201cScaletta standard\u201d genera i punti dal regolamento adattati alla gara; \u201cAppunti dal percorso\u201d importa piazzole a tempo, mobili e note della ricognizione. La mattina tocchi ogni punto mentre lo dici: barra di avanzamento e punti non trattati evidenziati nel referto."],
   ["Sanzioni", "Registro con escalation ammonizione \u2192 diffida \u2192 squalifica, arciere, piazzola e motivo. Tutto nella relazione con gli orari."],
   ["Ricorsi", "\u201cClassifica pubblicata ora\u201d avvia il countdown dei 30 minuti e annota l'evento nel diario. Ricorsi per iscritto, decisione inappellabile."],
-  ["Controlli — velocità compound", "Carica l'elenco iscritti in PDF: l'app estrae gli arcieri compound (CO·SL·SI·FS) in ordine alfabetico. Inserisci gli fps misurati: oltre i 300 scatta ✗ OLTRE (squalifica immediata) e l'annotazione automatica nel diario. Arcieri fuori elenco aggiungibili a mano; le irregolarità finiscono nella relazione."],
+  ["Controlli — compound (velocità e carico)", "Carica l'elenco iscritti in PDF: l'app estrae gli arcieri compound (CO·SL·SI·FS) in ordine alfabetico. Per CO/SL/SI inserisci gli fps (limite 300, squalifica immediata); per FS le libbre al picco (limite 60, Reg. 6.6 — prima della gara l'arciere può adeguarsi, in gara è squalifica). Esiti automatici, annotazione nel diario, irregolarità in relazione; arcieri fuori elenco aggiungibili a mano."],
   ["Emergenze", "112, responsabile e soccorso a un tap; rilevamento GPS con coordinate da dettare (funziona anche senza rete dati)."]
  ]],
  ["Consulta", [
@@ -3396,6 +3408,7 @@ const GUIDE = [
   ["Dove stanno i dati", "Tutto sul dispositivo (localStorage + foto in IndexedDB). Nessun dato viene inviato altrove; l'export JSON è l'unico modo con cui i dati escono, e lo decidi tu."]
  ]],
  ["Changelog", [
+  ["v1.15", "Adeguamento al Regolamento Sportivo rev. 6.6: FS fuori dai 300 fps con limite 60 lb al picco (controllo compound velocità+carico), linea gialla a 10 m nel 40 R&T, casistica ampliata (telemetri, volée in linea, premiazioni, correzioni categoria, due GdG) e fonti aggiornate."],
   ["v1.14", "Piazzole: semaforo verde solo a controllo completato (dati inseriti + verifiche ricognizione segnate); senza dati il pallino resta grigio."],
   ["v1.13", "Referto: export della gara in XML strutturato e invio diretto a un punto di scambio HTTP configurabile (Drive via Apps Script, webhook, altre app)."],
   ["v1.12", "Arcieri: esito OK/KO sul singolo arciere. Controlli: solo velocità compound, con import dell'elenco iscritti (CO/SL/SI/FS) e limite 300 fps."],
