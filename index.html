@@ -536,7 +536,8 @@ input[type=number].vel-fps{width:74px; flex:0 0 74px; padding:9px 4px; font-size
         <div class="dist-row"><span>Velocità massima frecce</span><span><b>300 fps</b> · cronotachigrafo a 1,5–2 m</span></div>
         <div class="dist-row"><span>Diametro max asta e punta</span><span><b>9,4 mm</b></span></div>
         <div class="dist-row"><span>Tolleranza distanze picchetto–bersaglio</span><span><b>5%</b> solo per terreno/sicurezza</span></div>
-        <div class="dist-row"><span>Picchetti</span><span><span class="pk b"><i></i>Tecnologici</span> &nbsp;<span class="pk g"><i></i>Tradizionali</span> &nbsp;<span class="pk r"><i></i>PF/Lupetti</span></span></div>
+        <div class="dist-row"><span>Picchetti</span><span><span class="pk b"><i></i>CO/SL/SI/FS</span> &nbsp;<span class="pk g"><i></i>AN/RT/RM/AS/LB/RI</span> &nbsp;<span class="pk r"><i></i>PF/Lupetti</span></span></div>
+        <div class="dist-row"><span>RI nelle gare in linea</span><span>tira dalla linea <b>BIANCA</b> con i tecnologici</span></div>
         <div class="dist-row"><span>Gruppi sagome (L o H)</span><span>G1 &gt;25 · G2 20–25 · G3 15–20 · G4 &lt;15 cm</span></div>
       </div>
       <div class="card" id="casCard">
@@ -566,8 +567,8 @@ input[type=number].vel-fps{width:74px; flex:0 0 74px; padding:9px 4px; font-size
       </div>
       <div class="row2">
         <div><label class="f">Picchetto</label><select id="tDCat">
-          <option value="tech">Bianco — tecnologici</option>
-          <option value="trad">Giallo — tradizionali</option>
+          <option value="tech">Bianco — CO/SL/SI/FS</option>
+          <option value="trad">Giallo — AN/RT/RM/AS/LB/RI</option>
           <option value="pf">Rosso — PF/Lupetti</option></select></div>
         <div><label class="f">Distanza misurata (m)</label><input type="number" id="tDVal" inputmode="decimal" step="0.1"></div>
       </div>
@@ -588,7 +589,7 @@ input[type=number].vel-fps{width:74px; flex:0 0 74px; padding:9px 4px; font-size
 
     <div class="card">
       <h2>Spareggio classifica</h2>
-      <p class="muted">A parità di punti: più Spot → più Super Spot → più Perfect (dove previsto) → ex aequo.</p>
+      <p class="muted">A parità di punti: più Spot → più Super Spot → più Perfect (dove previsto) → ex aequo.<br>Nel <b>Challenge Elimination Round</b>: 1 freccia su un bersaglio extra; se la parità resta, vince la freccia più vicina al centro.</p>
       <table class="pts"><tr><th></th><th>Arciere A</th><th>Arciere B</th></tr>
         <tr><td>Punti</td><td><input type="number" id="pxA0" inputmode="numeric"></td><td><input type="number" id="pxB0" inputmode="numeric"></td></tr>
         <tr><td>Spot</td><td><input type="number" id="pxA1" inputmode="numeric"></td><td><input type="number" id="pxB1" inputmode="numeric"></td></tr>
@@ -727,6 +728,8 @@ input[type=number].vel-fps{width:74px; flex:0 0 74px; padding:9px 4px; font-size
 const CHECK = [
  {fase:"Preliminari", items:[
   [1,"Contattare il Responsabile dell'organizzazione"],
+  ["D","Documentazione pre-gara ricevuta dall'organizzatore: programma, elenco piazzole e bersagli, staff, piano sanitario, planimetrie (Reg. GdG Art. 14 bis — puoi richiedere integrazioni)"],
+  ["U","Divisa ufficiale CSAIn (o almeno il distintivo) indossata (Reg. GdG Art. 15)"],
   [2,"Presenza di indicazioni stradali (ove previsto)"]]},
  {fase:"Prima della ricognizione", items:[
   [3,"Presenza personale dell'organizzazione"],
@@ -842,6 +845,7 @@ const GARE = [
        ["Round 2ª",[["Perfect",12],["Super Spot",10],["Spot",8],["Sagoma",4]]],
        ["Trophy (unica)",[["Perfect",26],["Super Spot",22],["Spot",18],["Sagoma",12]]]], max:1040,
   note:["Solo gruppi 1–2–3. Due linee di tiro: BIANCA max 40 m (CO/SL/SI/FS/RI) e GIALLA 10 m più avanzata (AN/RT/RM/AS/LB).",
+   "⚠ L'Art. 12 del Reg. Gare Outdoor 2026 riporta ancora 32 m per i tradizionali nei gruppi 1–2: è un refuso della vecchia linea a 8 m — fa fede il Reg. Sportivo 6.6 (linee a 10 m → max 30 m). Segnalare alla commissione.",
    "Campo min 20×50 m per 20 corsie (outdoor).",
    "Round: 2 frecce per corsia (max 520). Trophy: 1 freccia (max 520).",
    "Semaforo/monitor: 90″ per 2 frecce, 60″ per 1."],
@@ -874,6 +878,7 @@ const GARE = [
        ["Round 2ª",[["Perfect",12],["Super Spot",10],["Spot",8],["Sagoma",4]]],
        ["Trophy (unica)",[["Perfect",26],["Super Spot",22],["Spot",18],["Sagoma",12]]]], max:1040,
   note:["Struttura min 20×40 m · due linee: BIANCA max 40 m e GIALLA +10 m avanzata.",
+   "⚠ Il Reg. Gare riporta ancora 32 m per i tradizionali nei gruppi 1–2 (refuso della linea a 8 m): fa fede il Reg. Sportivo 6.6 — max 30 m.",
    "Solo gruppi 1–2–3.",
    "Battifreccia dietro ogni bersaglio + rete di fondo h ≥3 m."],
   v1010:"Corsie 10+10: G1×2, G2×2, G3×6."}
@@ -991,6 +996,64 @@ grid.innerHTML = GARE.map(g => `
     <span class="badge ${g.amb==='in'?'ind':''}">${g.amb==='in'?'Indoor':g.amb==='linea-out'?'In linea outdoor':'Percorso outdoor'}</span>
   </button>`).join('');
 grid.querySelectorAll('[data-g]').forEach(t => t.onclick = () => showGara(t.dataset.g));
+/* tile Indoor Challenge (formato speciale: scheda di consultazione, senza verifica distanze) */
+grid.insertAdjacentHTML('beforeend', `
+  <button class="gara-tile" id="chalTile">
+    <div class="gt-n">⚔ <span style="font-size:.55em;font-weight:700">Indoor Challenge</span></div>
+    <div class="gt-s">25 3D Round + Elimination Round · circuito</div>
+    <span class="badge ind">Circuito Indoor</span>
+  </button>`);
+$('#chalTile').onclick = () => showChallenge();
+
+function showChallenge(){
+  $('#regIndex').style.display = 'none';
+  const d = $('#regDetail'); d.style.display = 'block';
+  d.innerHTML = `
+    <button class="btn ghost small back">← Tutte le gare</button>
+    <div class="card">
+      <h2 style="font-size:1.6rem">CSAIn Indoor Challenge <span class="badge ind">Circuito Indoor</span></h2>
+      <p class="muted" style="margin:4px 0 0">Prove regionali di qualifica + Finale · ogni prova = gara <b>25 3D Indoor Round</b> + <b>Challenge Elimination Round</b> (scontri diretti). Fonte: Regolamento CSAIn Indoor Challenge 2026.</p>
+    </div>
+    <div class="card"><h2>Struttura e ranking</h2><ul class="tight">
+      <li>Due classifiche separate: <b>Ranking Round</b> (somma dei migliori 6 risultati della gara 25 3D Round, finale compresa → titolo di <b>Campione Regionale Indoor</b>) e <b>Ranking Challenge</b> (somma dei migliori 6 punteggi Challenge → accesso alla Finale).</li>
+      <li>Gli Elimination Round si disputano <b>per categoria di arco e sesso</b>, senza distinzione di classe di età.</li>
+      <li>Il vincitore della Finale Challenge è il <b>Campione assoluto</b> (Challenge Elimination Round Champion) della categoria.</li>
+      <li>I punti Challenge non concorrono alla Ranking Round.</li></ul>
+    </div>
+    <div class="card"><h2>Accesso e conferme (prove di qualifica)</h2><ul class="tight">
+      <li>Accedono i <b>primi 4</b> della 25 3D Round di giornata per categoria e sesso.</li>
+      <li><b>Conferma entro 15 minuti</b> dalla pubblicazione della classifica; chi non conferma, rinuncia o è assente alla chiamata è escluso e non prende punti.</li>
+      <li>Ripescaggi scorrendo la classifica (5°, 6°…): il subentrante prende la <b>posizione di tabellone</b> del rinunciatario, senza rifare le teste di serie. Bye solo se non c'è più nessuno da ripescare.</li></ul>
+    </div>
+    <div class="card"><h2>Scontri</h2><ul class="tight">
+      <li>Tabellone: <b>1° vs 4°</b> e <b>2° vs 3°</b>; i vincitori si giocano 1°/2° posto, gli sconfitti 3°/4°.</li>
+      <li>Ogni scontro: <b>5 bersagli 3D</b>, una sola freccia per bersaglio (5 frecce), vince la somma dei punti. Bersagli identici per tutta la categoria.</li>
+      <li>Tempo: <b>30 secondi a bersaglio</b>, dal segnale del Direttore dei Tiri (penalità da Reg. Sportivo).</li>
+      <li><b>Spareggio</b>: una freccia su un bersaglio extra; se la parità resta, vince la freccia <b>più vicina al centro</b>.</li></ul>
+    </div>
+    <div class="card"><h2>Punti Challenge e casi ridotti</h2>
+      <table class="pts"><tr><th>Posizione</th><th>Punti</th></tr>
+        <tr><td>1° classificato</td><td><b>10</b></td></tr>
+        <tr><td>2° classificato</td><td><b>7</b></td></tr>
+        <tr><td>3° classificato</td><td><b>5</b></td></tr>
+        <tr><td>4° classificato</td><td><b>3</b></td></tr></table>
+      <ul class="tight">
+      <li><b>1 solo atleta</b> nella categoria: l'Elimination Round non si disputa, nessun punto (la prova conta però come partecipazione).</li>
+      <li><b>2 atleti</b>: due prove consecutive da 5 bersagli (10 frecce a testa), vince la somma → 10 e 7 punti.</li>
+      <li><b>3 atleti</b>: il 1° va in finale con un bye; 2° vs 3° in semifinale, il vincitore sfida il 1°.</li></ul>
+    </div>
+    <div class="card"><h2>Campo (Allegato 2)</h2><ul class="tight">
+      <li>20 corsie divise in <b>4 campi da 5 corsie</b>: max 4 categorie per campo + 1 corsia libera.</li>
+      <li>Semifinali con qualificati A·B·C·D (1°/2°: vincenti A-D vs vincenti B-C; 3°/4°: perdenti); dopo le semifinali le categorie <b>cambiano campo</b> (rotazione Campo 1 ↔ 2 e Campo 3 ↔ 4).</li></ul>
+    </div>
+    <div class="card"><h2>Finale Challenge</h2><ul class="tight">
+      <li>Accedono fino a 4 atleti per categoria/sesso: prima chi ha il <b>requisito completo</b> (almeno 6 prove di qualifica e almeno 1 punto Challenge) in ordine di Ranking Challenge, poi gli altri con punti Challenge, infine scorrendo la Ranking Round di qualificazione.</li>
+      <li>La 25 3D Round del giorno della Finale <b>vale per la Ranking Round</b> (titolo regionale) ma <b>non</b> determina accesso o accoppiamenti della Finale Challenge.</li>
+      <li>Premiazioni finale: vincitori della gara del giorno, Campioni Regionali Indoor (Ranking Round) e Campioni assoluti (Finale Challenge).</li></ul>
+    </div>`;
+  d.querySelector('.back').onclick = () => { d.style.display = 'none'; $('#regIndex').style.display = 'block'; };
+  window.scrollTo({top: 0});
+}
 
 function distBlock(g){
   const catL = ['Gruppo 1','Gruppo 2','Gruppo 3','Gruppo 4'];
@@ -2441,6 +2504,7 @@ const CAS = [
  ["Arciere supera la tabella o si avvicina al bersaglio","Non \u00e8 consentito avvicinarsi al bersaglio o superare i picchetti finch\u00e9 tutta la squadra non ha tirato: punteggio della piazzola annullato, recidivi squalificati.","Cap. IV Par. VI.4"],
  ["Bersaglio o frecce toccati prima della registrazione","N\u00e9 il bersaglio n\u00e9 le frecce vanno toccati finch\u00e9 tutti i punti sono registrati: il punteggio dell\u2019arciere inadempiente viene annullato. Freccia sotto la sagoma: il responsabile pu\u00f2 muovere leggermente la sagoma solo dopo la registrazione delle altre frecce.","Cap. IV Par. VI.11"],
  ["Freccia senza anelli o senza nome/tessera","Le frecce senza anelli di riferimento non acquisiscono punteggio; senza riconoscimento scritto sull\u2019asta la freccia non \u00e8 valida (\u00e8 possibile rendere riconoscibili le aste durante la gara). Diametro max asta/punta 9,4 mm.","Cap. III Par. I"],
+ ["Da dove tira il Ricurvo Illimitato (RI)","Nei percorsi outdoor (Fusion, Track, Round, Target, Free-Shot) RI tira dal picchetto o area GIALLO con i tradizionali (AN/RT/RM/AS/LB/RI). Nelle gare in linea 40 R&T tira invece dalla linea BIANCA con i tecnologici (CO/SL/SI/FS/RI). Resta esente dai tempi limitati e sulle mobili pu\u00f2 dare il pronto ad arco carico.","Reg. Gare Outdoor Artt. 1-12 \u00b7 Reg. Sportivo Cap. VI Par. III.6"],
  ["Velocit\u00e0 frecce oltre 300 fps","Squalifica immediata dell\u2019arciere. Il limite vale per tutte le categorie ESCLUSA FS, che ha invece un limite di carico di 60 lb al picco. Rilevamento con cronotachigrafo posto a 1,50 m dalla linea di tiro, prima e/o durante la gara a discrezione dei GdG.","Cap. III Par. I.7-8 e Par. II"],
  ["Carico dell\u2019arco oltre il limite","La verifica del carico (classi giovanili e categoria FS, max 60 lb al picco) pu\u00f2 avvenire prima, durante o dopo la gara: se il superamento \u00e8 rilevato prima dell\u2019inizio l\u2019arciere pu\u00f2 adeguare l\u2019attrezzatura; se rilevato durante o al termine scatta la squalifica.","Cap. III Par. II"],
  ["Telemetri, distanze comunicate, fotocamere","\u00c8 vietato usare strumenti di rilevazione o stima delle distanze e trasmettere o comunicare con qualsiasi mezzo informazioni su distanze o caratteristiche dei tiri. Fotocamere ammesse solo senza scale graduate. Violazione: ammonizione immediata; recidiva: squalifica.","Cap. IV Par. V.16"],
@@ -3355,7 +3419,7 @@ $('#upSend').onclick = async () => {
 /* ================== GUIDA D'USO ==================
    Da aggiornare a ogni modifica: incrementa APP_VER (allineata alla cache del
    service worker) e aggiungi la voce in cima al Changelog. */
-const APP_VER = 'v1.15 · agosto 2026';
+const APP_VER = 'v1.16 · settembre 2026';
 
 const GUIDE = [
  ["Panoramica", [
@@ -3391,7 +3455,7 @@ const GUIDE = [
   ["Emergenze", "112, responsabile e soccorso a un tap; rilevamento GPS con coordinate da dettare (funziona anche senza rete dati)."]
  ]],
  ["Consulta", [
-  ["Schede gara", "Distanze massime per gruppo e categoria, punteggi, prescrizioni chiave e versione 10+10 per tutti i formati outdoor, in linea e indoor."],
+  ["Schede gara", "Distanze massime per gruppo e categoria, punteggi, prescrizioni chiave e versione 10+10 per tutti i formati outdoor, in linea e indoor — verificate sul Regolamento Gare Outdoor 2026 e sul Reg. Sportivo 6.6 — più la scheda del circuito <b>CSAIn Indoor Challenge</b> (elimination round, punti, tabelloni e finale)."],
   ["Casistica", "\u201cCosa faccio se\u2026\u201d: 22 casi con risposta secca e riferimento all'articolo, ricercabili."],
   ["Strumenti", "Gruppo sagoma da misura L/H, verifica distanza singola, calcolatore validità gara (Cap. IV Par. XI), spareggio classifica, regole score, timer di backup con segnali acustici."]
  ]],
@@ -3408,6 +3472,7 @@ const GUIDE = [
   ["Dove stanno i dati", "Tutto sul dispositivo (localStorage + foto in IndexedDB). Nessun dato viene inviato altrove; l'export JSON è l'unico modo con cui i dati escono, e lo decidi tu."]
  ]],
  ["Changelog", [
+  ["v1.16", "Verifica sui nuovi regolamenti 2026: schede gara confermate sul Reg. Gare Outdoor 2026 (nota sul refuso 32 m nel 40 R&T: fa fede il Reg. Sportivo, 30 m); nuova scheda CSAIn Indoor Challenge; checklist con documentazione pre-gara e divisa (Reg. GdG rev. 1.0); casistica RI e categorie sui picchetti."],
   ["v1.15", "Adeguamento al Regolamento Sportivo rev. 6.6: FS fuori dai 300 fps con limite 60 lb al picco (controllo compound velocità+carico), linea gialla a 10 m nel 40 R&T, casistica ampliata (telemetri, volée in linea, premiazioni, correzioni categoria, due GdG) e fonti aggiornate."],
   ["v1.14", "Piazzole: semaforo verde solo a controllo completato (dati inseriti + verifiche ricognizione segnate); senza dati il pallino resta grigio."],
   ["v1.13", "Referto: export della gara in XML strutturato e invio diretto a un punto di scambio HTTP configurabile (Drive via Apps Script, webhook, altre app)."],
