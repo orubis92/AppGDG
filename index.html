@@ -967,7 +967,15 @@ function renderCheck(){
   });
   box.querySelectorAll('[data-ck]').forEach(b => b.onclick = () => {
     const id = b.dataset.ck;
-    S.check[id] = (S.check[id] === b.dataset.v) ? '' : b.dataset.v;
+    const old = S.check[id];
+    const nv = (old === b.dataset.v) ? '' : b.dataset.v;
+    S.check[id] = nv;
+    /* su un KO la fase resta aperta: quasi sempre va scritta la nota; risolto il KO, torna l'avanzamento automatico */
+    const fi = CHECK.findIndex(f => f.items.some(([x]) => String(x) === String(id)));
+    if (fi >= 0){
+      if (nv === 'KO') S.faseOpen[fi] = true;
+      else if (old === 'KO' && S.faseOpen[fi] === true) delete S.faseOpen[fi];
+    }
     save(); renderCheck();
   });
   box.querySelectorAll('[data-note]').forEach(i => i.oninput = () => {
@@ -3419,7 +3427,7 @@ $('#upSend').onclick = async () => {
 /* ================== GUIDA D'USO ==================
    Da aggiornare a ogni modifica: incrementa APP_VER (allineata alla cache del
    service worker) e aggiungi la voce in cima al Changelog. */
-const APP_VER = 'v1.16 · settembre 2026';
+const APP_VER = 'v1.17 · settembre 2026';
 
 const GUIDE = [
  ["Panoramica", [
@@ -3472,6 +3480,7 @@ const GUIDE = [
   ["Dove stanno i dati", "Tutto sul dispositivo (localStorage + foto in IndexedDB). Nessun dato viene inviato altrove; l'export JSON è l'unico modo con cui i dati escono, e lo decidi tu."]
  ]],
  ["Changelog", [
+  ["v1.17", "Prova d'uso completa (giornata di gara simulata): correzione checklist — segnando un KO la fase resta aperta per scrivere subito la nota."],
   ["v1.16", "Verifica sui nuovi regolamenti 2026: schede gara confermate sul Reg. Gare Outdoor 2026 (nota sul refuso 32 m nel 40 R&T: fa fede il Reg. Sportivo, 30 m); nuova scheda CSAIn Indoor Challenge; checklist con documentazione pre-gara e divisa (Reg. GdG rev. 1.0); casistica RI e categorie sui picchetti."],
   ["v1.15", "Adeguamento al Regolamento Sportivo rev. 6.6: FS fuori dai 300 fps con limite 60 lb al picco (controllo compound velocità+carico), linea gialla a 10 m nel 40 R&T, casistica ampliata (telemetri, volée in linea, premiazioni, correzioni categoria, due GdG) e fonti aggiornate."],
   ["v1.14", "Piazzole: semaforo verde solo a controllo completato (dati inseriti + verifiche ricognizione segnate); senza dati il pallino resta grigio."],
